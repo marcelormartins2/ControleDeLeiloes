@@ -1,0 +1,76 @@
+﻿@model ControleDeLeiloes.Models.Produto
+@if (Model == null)
+{
+    <input type="hidden" asp-for="UsuarioId" value="123" />
+    <div class="form-group">
+        <label asp-for="Data" class="control-label"></label>
+        <input type="date" asp-for="Data" class="form-control" />
+        <span asp-validation-for="Data" class="text-danger"></span>
+    </div>
+}
+else
+{
+    <input type="hidden" asp-for="UsuarioId" value="@Model.UsuarioId" />
+    <div class="form-group">
+        <label asp-for="Data" class="control-label"></label>
+        <input asp-for="Data" class="form-control" />
+        <span asp-validation-for="Data" class="text-danger"></span>
+    </div>
+}
+
+
+<div class="form-group">
+    <label asp-for="Descricao" class="control-label"></label>
+    <input asp-for="Descricao" class="form-control" />
+    <span asp-validation-for="Descricao" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="VlAnunciado" class="control-label"></label>
+    <input asp-for="VlAnunciado" class="form-control" />
+    <span asp-validation-for="VlAnunciado" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="VlNegociado" class="control-label"></label>
+    <input asp-for="VlNegociado" class="form-control" />
+    <span asp-validation-for="VlNegociado" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="VlCompra" class="control-label"></label>
+    <input asp-for="VlCompra" class="form-control" />
+    <span asp-validation-for="VlCompra" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="VlVenda" class="control-label"></label>
+    <input asp-for="VlVenda" class="form-control" />
+    <span asp-validation-for="VlVenda" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="Bairro" class="control-label"></label>
+    <input asp-for="Bairro" class="form-control" />
+    <span asp-validation-for="Bairro" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="Endereco" class="control-label"></label>
+    <input asp-for="Endereco" class="form-control" />
+    <span asp-validation-for="Endereco" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="Localizacao" class="control-label"></label>
+    <input asp-for="Localizacao" class="form-control" />
+    <span asp-validation-for="Localizacao" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="Anuncio" class="control-label"></label>
+    <input asp-for="Anuncio" class="form-control" />
+    <span asp-validation-for="Anuncio" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="Telefone" class="control-label"></label>
+    <input asp-for="Telefone" class="form-control" />
+    <span asp-validation-for="Telefone" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="Vendedor" class="control-label"></label>
+    <input asp-for="Vendedor" class="form-control" />
+    <span asp-validation-for="Vendedor" class="text-danger"></span>
+</div>

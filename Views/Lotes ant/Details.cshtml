@@ -1,0 +1,54 @@
+﻿@model ControleDeLeiloes.Models.Lote
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Lote</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Numero)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Numero)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.VlAvalicao)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlAvalicao)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.VlCondicional)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlCondicional)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.VlPago)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlPago)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.VlLance)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlLance)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Leilao)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Leilao.Id)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

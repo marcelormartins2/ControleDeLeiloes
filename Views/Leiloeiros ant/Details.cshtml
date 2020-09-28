@@ -1,0 +1,48 @@
+﻿@model ControleDeLeiloes.Models.Leiloeiro
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Leiloeiro</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Nome)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Nome)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Telefone)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Telefone)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Site)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Site)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.TaxaAvaliacaoPadrao)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.TaxaAvaliacaoPadrao)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.TaxaVendaPadrao)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.TaxaVendaPadrao)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

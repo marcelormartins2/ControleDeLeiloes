@@ -1,0 +1,73 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/style.css" type="text/css" />
+    <style>
+        .container {
+            margin: 150px
+        }
+
+        .action {
+            width: 400px;
+            height: 30px;
+            margin: 10px 0;
+        }
+
+        .cropped > img {
+            margin-right: 10px;
+        }
+    </style>
+    <base href="/img/avatars/">
+</head>
+<body>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/cropbox-min.js"></script>
+    <div class="container">
+        <div class="imageBox">
+            <div class="thumbBox"></div>
+            <div class="spinner" style="display: none">Loading...</div>
+        </div>
+        <div class="action">
+            <input type="file" id="file" style="float:left; width: 250px">
+            <input type="button" id="btnCrop" value="Crop" style="float: right">
+            <input type="button" id="btnZoomIn" value="+" style="float: right">
+            <input type="button" id="btnZoomOut" value="-" style="float: right">
+        </div>
+        <div class="cropped"> </div>
+    </div>
+    <script type="text/javascript">
+        $(window).load(function () {
+            var options =
+            {
+                thumbBox: '.thumbBox',
+                spinner: '.spinner',
+                imgSrc: 'default.png'
+            }
+            var cropper = $('.imageBox').cropbox(options);
+            $('#file').on('change', function () {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    options.imgSrc = e.target.result;
+                    cropper = $('.imageBox').cropbox(options);
+                }
+                reader.readAsDataURL(this.files[0]);
+                this.files = [];
+            })
+            $('#btnCrop').on('click', function () {
+                var img = cropper.getAvatar()
+                $('.cropped').append('<img src="' + img + '">');
+            })
+            $('#btnZoomIn').on('click', function () {
+                cropper.zoomIn();
+            })
+            $('#btnZoomOut').on('click', function () {
+                cropper.zoomOut();
+            })
+        });
+    </script>
+
+
+</body>
+</html>

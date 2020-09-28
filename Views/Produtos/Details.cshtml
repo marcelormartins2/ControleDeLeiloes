@@ -1,0 +1,19 @@
+﻿@model ControleDeLeiloes.Models.Produto
+
+@{
+    ViewData["Title"] = "Detalhes";
+}
+
+<h2>Detalhes</h2>
+
+<div class="panel panel-default panel-controls">
+    <h4>Produto</h4>
+
+    <partial name="_details_delete" />
+
+</div>
+<div>
+    <p><a asp-action="Edit" asp-route-id="@Model.Id">Editar</a> | 
+    <a asp-action="Delete" asp-route-id="@Model.Id">Deletar</a></p>
+    <a asp-action="Index">Voltar para lista</a>
+</div>

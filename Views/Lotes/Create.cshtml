@@ -1,0 +1,66 @@
+﻿@model ControleDeLeiloes.Models.Lote
+
+@{
+    ViewData["Title"] = "Incluir";
+}
+
+<h2>Incluir</h2>
+
+<h4>Lotes</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <partial name="_edit_create" />
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar para lista</a>
+</div>
+
+@*@section scripts
+    {
+
+
+
+        <script type="text/javascript">
+            $(window).load(function () {
+                $('#SelectLeiloeiro').on('change', function () {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        options.imgSrc = e.target.result;
+                        cropper = $('.imageBox').cropbox(options);
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                    this.files = [];
+                })
+                $('#btnCrop').on('click', function () {
+                    var img = cropper.getAvatar()
+
+                    //$('.cropped').append('<img src="' + img + '">');
+
+                    var formdata = new FormData();
+                    formdata.append("base64image", img);
+                    formdata.append("userName", "@this.User.Identity.Name.ToString()")
+                    $.ajax({ url: "@Url.Action("SaveImage","Parceiros")", async: false, type: "POST", data: formdata, processData: false, contentType: false });
+                    history.go(-1);
+
+                })
+
+                $('#btnZoomIn').on('click', function () {
+                    cropper.zoomIn();
+                })
+                $('#btnZoomOut').on('click', function () {
+                    cropper.zoomOut();
+                })
+            });
+        </script>
+    }*@

@@ -1,0 +1,27 @@
+﻿
+<h2>Buscar Anuncio</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="BuscarAnuncio">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label for="anuncio">Anuncio</label>
+                <input type="text" id="anuncio" name="anuncio" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="BuscarAnuncio" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar para lista</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

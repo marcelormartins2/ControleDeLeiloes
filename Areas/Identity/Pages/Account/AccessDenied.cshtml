@@ -1,0 +1,14 @@
+﻿@page
+@model AccessDeniedModel
+@{
+    ViewData["Title"] = "Acesso Negado";
+}
+
+<header>
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p class="text-danger">Você não pode acessar este recurso.</p>
+</header>
+
+<div>
+    <a asp-controller="Home" asp-action="Index">Home</a>
+</div>

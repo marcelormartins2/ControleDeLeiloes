@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "Erro";
+}
+
+<h2>Erro.</h2>
+<h4>Ocorreu um erro no processamento da sua requisição.</h4>
+
+    <p>
+
+        <code>@ViewBag.Mensagem</code>
+
+    </p>
+    <div>
+        <input type='button' onclick='history.go(-1);' value='Go Back' />
+    </div>
+

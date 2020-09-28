@@ -1,0 +1,121 @@
+﻿@{
+    ViewData["Title"] = "Avatar";
+}
+
+@section heads
+{
+    <link rel="stylesheet" href="~/css/style.css" type="text/css" />
+
+    <style>
+        html {
+            position: fixed;
+        }
+
+        .container {
+            margin: 0px;
+            margin: 0px 0;
+        }
+
+        .imageBox {
+            width: 128px;
+            height: 128px;
+        }
+
+
+        .action {
+            width: 600px;
+            height: 30px;
+            margin: 0px 0;
+        }
+
+        .cropped > img {
+            margin-right: 0px;
+        }
+
+        #centro {
+            width: 128px;
+            height: 128px;
+            position: absolute;
+            top: 0%;
+            left: 0%;
+        }
+    </style>
+}
+
+<base href="/img/avatars/">
+
+<div class="col-md-4">
+    <div class="container">
+        <div class="imageBox">
+            <div class="thumbBox"></div>
+            <img src="circulo.png" alt="Avatar" id="centro">
+            <div class="spinner" style="display: none;">Carregando...</div>
+        </div>
+        <div class="action" style="font-size: 0.6rem">
+            <a>
+                <label for="file">
+                    <i class="fa fa-folder-open-o fa-4x" title="Trocar foto">&nbsp</i>
+                </label>
+                <input id="file" type="file" accept="image/*" style="display:none" />
+            </a>
+            <a href="javascript:void(0);" onclick="history.go(-1);">
+                <i class="fa fa-close fa-4x" id="btnCancel" title="Cancelar">&nbsp</i>
+            </a>
+            <a>
+                <i class="fa fa-plus-square-o fa-4x" id="btnZoomIn" title="zoom in">&nbsp</i>
+                <i class="fa fa-minus-square-o fa-4x" id="btnZoomOut" title="zoom out">&nbsp</i>
+                <i class="fa fa-check-square-o fa-4x" id="btnCrop" title="Salvar">&nbsp</i>
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts
+{
+
+    
+
+    <script type="text/javascript">
+        $(window).load(function () {
+            var now = new Date
+
+            var options =
+            {
+                thumbBox: '.thumbBox',
+                spinner: '.spinner',
+                imgSrc: '@this.User.Identity.Name.ToString()'+'.jpg?'+now.getTime()
+            }
+            var cropper = $('.imageBox').cropbox(options);
+            $('#file').on('change', function () {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    options.imgSrc = e.target.result;
+                    cropper = $('.imageBox').cropbox(options);
+                }
+                reader.readAsDataURL(this.files[0]);
+                this.files = [];
+            })
+            $('#btnCrop').on('click', function () {
+                var img = cropper.getAvatar()
+
+                //$('.cropped').append('<img src="' + img + '">');
+
+                var formdata = new FormData();
+                formdata.append("base64image", img);
+                formdata.append("userName", "@this.User.Identity.Name.ToString()")
+                $.ajax({ url: "@Url.Action("SaveImage","Usuarios")", async: false, type: "POST", data: formdata, processData: false, contentType: false });
+                history.go(-1);
+
+            })
+
+            $('#btnZoomIn').on('click', function () {
+                cropper.zoomIn();
+            })
+            $('#btnZoomOut').on('click', function () {
+                cropper.zoomOut();
+            })
+        });
+    </script>
+}

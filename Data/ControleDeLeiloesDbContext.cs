@@ -1,0 +1,27 @@
+﻿using ControleDeLeiloes.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+
+namespace ControleDeLeiloes.Data
+{
+    public class ControleDeLeiloesDbContext : IdentityDbContext<Usuario>
+    {
+        public ControleDeLeiloesDbContext(DbContextOptions<ControleDeLeiloesDbContext> options)
+            : base(options)
+        {
+        }
+
+        public virtual DbSet<Usuario> Usuario { get; set; }
+        public virtual DbSet<Produto> Produto { get; set; }
+        public virtual DbSet<Lote> Lote { get; set; }
+        public virtual DbSet<Leilao> Leilao { get; set; }
+        public virtual DbSet<Leiloeiro> Leiloeiro { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
+
+    }
+}

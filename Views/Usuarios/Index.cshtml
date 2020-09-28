@@ -1,0 +1,169 @@
+﻿@model ControleDeLeiloes.Models.Usuario
+
+
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<table>
+    <tr>
+        <td>
+            <!-- Start .row -->
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <!-- col-lg-4 start here -->
+                    <div class="panel panel-default plain">
+                        <!-- Start .panel -->
+                        <div class="panel-heading">
+                            <h4 class="panel-title bb">Usuario</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row profile">
+                                <!-- Start .row -->
+                                <div class="col-md-4">
+                                    <div class="profile-avatar">
+                                        <img src=@ViewBag.PathAvatar alt="Avatar" height="128" width="128">
+                                        <p class="mt10">
+                                            <a asp-area="" asp-controller="Usuarios" 
+                                               asp-action="Avatar"><i class="fa fa-picture-o">
+                                            </i> Editar foto</a>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="profile-name">
+                                        <h3>@Model.UserName</h3>
+                                        <p class="job-title mb0">
+                                            <i class="fa fa-building"></i>
+                                            @if (User.IsInRole("Administrador"))
+                                            {
+                                                <b>Administrador</b>
+                                            }
+                                            else
+                                            {
+                                                <b>Usuário</b>
+                                            }
+                                        </p>
+                                        <p class="balance">
+                                            Investimento: <span>0$</span>
+                                        </p>
+                                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-large mr10">
+                                                <i class="fa fa-envelope"></i> Editar dados
+                                            </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="contact-info bt">
+                                        <div class="row">
+                                            <!-- Start .row -->
+                                            <div class="col-md-4">
+                                                <dl class="mt20">
+                                                    <dt class="text-muted">Telefone</dt>
+                                                    <dd>@Model.PhoneNumber</dd>
+                                                    <dt class="text-muted">Celular</dt>
+                                                    <dd>@Model.Celular</dd>
+                                                </dl>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <dl class="mt20">
+                                                    <dt class="text-muted">Email</dt>
+                                                    <dd>@Model.Email</dd>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                        <!-- End .row -->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End .row -->
+                        </div>
+                    </div>
+                    <!-- End .panel -->
+                    <div class="panel panel-default plain">
+                        <!-- Start .panel -->
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Estatisticas do Usuario</h4>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="progressbars-stats list-unstyled">
+                                <li>
+                                    <div class="progressbar-icon">
+                                        <i class="glyphicon glyphicon-user"></i>
+                                    </div>
+                                    <span class="progressbar-text">Cadastro completo</span>
+                                    <div class="progress animated-bar flat mt0">
+                                        <div class="progress-bar" role="progressbar" data-transitiongoal="40"></div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="progressbar-icon">
+                                        <i class="glyphicon glyphicon-comment"></i>
+                                    </div>
+                                    <span class="progressbar-text">Rentabilidade</span>
+                                    <div class="progress animated-bar flat mt0">
+                                        <div class="progress-bar progress-bar-primary" role="progressbar" data-transitiongoal="83"></div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="progressbar-icon">
+                                        <i class="glyphicon glyphicon-hdd"></i>
+                                    </div>
+                                    <span class="progressbar-text">Média Rentabilidade/Veiculo</span>
+                                    <div class="progress animated-bar flat mt0">
+                                        <div class="progress-bar progress-bar-danger" role="progressbar" data-transitiongoal="98"></div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="progressbar-icon">
+                                        <i class="fa fa-pie-chart"></i>
+                                    </div>
+                                    <span class="progressbar-text">Veículos à venda</span>
+                                    <div class="progress animated-bar flat mt0">
+                                        <div class="progress-bar progress-bar-success" role="progressbar" data-transitiongoal="62"></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- End .panel -->
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <!-- col-lg-4 start here -->
+                    <div class="panel panel-default plain">
+                        <!-- Start .panel -->
+                        <div class="panel-heading">
+                            <h4 class="panel-title">Veículos</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div id="user-purchase-chart" style="width: 100%; height:250px;"></div>
+                            <div class="row">
+                                <!-- Start .row -->
+                                <div class="mt20 bt"></div>
+                                <div class="col-lg-6 text-center">
+                                    <!-- col-lg-6 start here -->
+                                    <h5 class="mt20 mb0">Stats by type</h5>
+                                    <div id="morris-donut" style="width: 100%; height:180px;"></div>
+                                </div>
+                                <!-- col-lg-6 end here -->
+                                <div class="col-lg-6 text-center">
+                                    <!-- col-lg-6 start here -->
+                                    <h5 class="mt20 mb0">Purchase distribution</h5>
+                                    <div class="canvas-holder mt15">
+                                        <canvas id="radar-chartjs" height="180"></canvas>
+                                    </div>
+                                </div>
+                                <!-- col-lg-6 end here -->
+                            </div>
+                            <!-- End .row -->
+                        </div>
+                    </div>
+                    <!-- End .panel -->
+                </div>
+                <!-- col-lg-4 end here -->
+            </div>
+            <!-- End .row -->
+        </td>
+    </tr>
+</table>
+

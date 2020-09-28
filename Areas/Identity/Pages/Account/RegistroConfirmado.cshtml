@@ -1,0 +1,40 @@
+﻿
+@page
+@model LoginModel
+
+@{
+    Layout = "";
+    ViewData["Title"] = "Registro Confirmado";
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>@ViewData["Title"] - ControleDeLeiloes</title>
+    <link href="~/bundle/core.min.css" rel="stylesheet" />
+</head>
+
+<body class="login-page">
+    <div class="container login-container">
+        <div class="login-panel panel panel-default plain animated bounceIn">
+            <div class="panel-body">
+                <form class="form-horizontal mt0" id="login-form" role="form" method="post">
+                    <div class="form-group">
+                        <div class="col-lg-12">
+                            <div class="input-group input-icon">
+                                    <h4 class="text-danger">@ViewData["Title"]</h4>
+                                    <p class="text-capitalize">A sua conta foi registrada com sucesso. Aguarde a liberação pelo administrador.</p>
+                                <div>
+                                    <a asp-controller="Home" asp-action="Index">Voltar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

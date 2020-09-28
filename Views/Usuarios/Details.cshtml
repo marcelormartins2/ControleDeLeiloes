@@ -1,0 +1,63 @@
+﻿@model ControleDeLeiloes.Models.Usuario
+
+@{
+    ViewData["Title"] = "Detalhes";
+    var avatar = Model.UserName + ".jpg?" + DateTime.Now.Ticks;
+}
+
+<h2>Detalhes</h2>
+
+<div>
+    <h4>Usuario</h4>
+    <p>
+        <img src="@avatar" alt="avatar">
+    </p>
+    <dl class="dl-horizontal">
+        @if (Model.UserName == User.Identity.Name || User.IsInRole("Administrator"))
+        {
+                <dt>
+                    Nome de Usuário:
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.UserName)
+                </dd>
+        }
+        <dt>
+            Usuario:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Nome)
+        </dd>
+        <dt>
+            Email:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        <dt>
+            Celular:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Celular)
+        </dd>
+        <dt>
+            Telefone:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PhoneNumber)
+        </dd>
+        <dt>
+            Endereço:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Endereco)
+        </dd>
+    </dl>
+</div>
+<div>
+    @if (Model.UserName == User.Identity.Name || User.IsInRole("Administrator"))
+    {
+        <p><a asp-action="Edit" asp-route-id="@Model.Id">Editar dados</a></p>
+    }
+    <a asp-action="Lista">Voltar para lista</a>
+</div>

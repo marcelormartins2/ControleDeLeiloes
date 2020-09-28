@@ -1,0 +1,20 @@
+﻿@model ControleDeLeiloes.Models.Leilao
+
+
+<dl class='dl-horizontal'>
+
+    <dt>Descricao:</dt>
+    <dd>@Html.DisplayFor(model => model.Descricao)</dd>
+
+    <dt>Data:</dt>
+    <dd>@Html.DisplayFor(model => model.Data)</dd>
+
+    <dt>TaxaAvaliacao:</dt>
+    <dd>@Html.DisplayFor(model => model.TaxaAvaliacao)</dd>
+
+    <dt>TaxaVenda:</dt>
+    <dd>@Html.DisplayFor(model => model.TaxaVenda)</dd>
+
+    <dt>Leiloeiro:</dt>
+    <dd>@Html.DisplayFor(model => model.Leiloeiro.Nome)</dd>
+</dl>

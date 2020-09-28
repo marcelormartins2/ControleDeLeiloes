@@ -1,0 +1,24 @@
+﻿@model ControleDeLeiloes.Models.Lote
+
+@{
+    ViewData["Title"] = "Deletar";
+}
+
+<h2>Deletar</h2>
+
+<div class="panel panel-default panel-controls">
+    <div>
+        <h4>Lotes</h4>
+        <h4>Você tem certeza que quer deletar este Lote?</h4>
+
+        <partial name="_details_delete" />
+
+    </div>
+</div>
+<div>
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Delete" class="btn btn-success" /> |
+        <a asp-action="Index">Voltar para lista</a>
+    </form>
+</div>

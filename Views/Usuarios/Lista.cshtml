@@ -1,0 +1,98 @@
+﻿@model IEnumerable<ControleDeLeiloes.Models.Usuario>
+
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<h2>Usuarios</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Avatar</th>
+            <th>Usuario</th>
+            <th>Telefone</th>
+            <th>Celular/Whatsapp</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var avatar = item.UserName + ".jpg?" + DateTime.Now.Ticks;
+        <tr>
+            <td>
+                <div class="row profile">
+                    <div class="col-md-4">
+                        <div class="profile-avatar">
+                            @if (item.UserName == User.Identity.Name)
+                            {
+                                <a asp-action="Index">
+                                    <img src="@avatar" alt="Avatar" height="32" width="32">
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="Details" asp-route-id="@item.Email">
+                                    <img src="@avatar" alt="Avatar" height="32" width="32">
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                @if (item.UserName == User.Identity.Name)
+                {
+                <a asp-action="Index">
+                    @Html.DisplayFor(modelItem => item.Nome)
+                </a>
+                }
+                else
+                {
+                    <a asp-action="Details" asp-route-id="@item.Email">
+                        @Html.DisplayFor(modelItem => item.Nome)
+                    </a>
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PhoneNumber)
+            </td>
+            <td>
+                @if (item.Celular != null)
+                {
+                    var link = "https://wa.me/55" + item.Celular;
+                <a href="@link" target="_blank">
+                    @Html.DisplayFor(modelItem => item.Celular)
+                </a>
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @if (item.UserName == User.Identity.Name)
+                {
+                    <a asp-action="Index">Detalhes</a>
+                }
+                else
+                {
+                    <a asp-action="Details" asp-route-id="@item.Email">Detalhes</a>
+                }
+                @if (User.IsInRole("Administrator"))
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id">| Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id">| Delete</a>
+                }
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+<div>
+    <a asp-controller="Usuarios" asp-action="Index">Home</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

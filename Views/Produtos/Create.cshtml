@@ -1,0 +1,69 @@
+﻿@model ControleDeLeiloes.Models.Produto
+
+@{
+    ViewData["Title"] = "Incluir";
+}
+
+<h2>Incluir</h2>
+
+<h4>Produto</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label class="control-label">Anuncio</label>
+                <input type="text" id="linkAnuncio" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <input type="button" id="btnBuscarAnuncio" value="Buscar Anuncio" class="btn btn-success" onclick="BuscarAnuncio()" />
+            </div>
+
+            <partial name="_edit_create" />
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar para lista</a>
+</div>
+
+
+@section scripts
+{
+
+
+
+    <script type="text/javascript">
+        function BuscarAnuncio() {
+            var anuncio = document.getElementById("linkAnuncio").value
+            if (anuncio != null || anuncio != "") {
+
+                $.ajax({
+                    dataType: "json",
+                    type: "GET",
+                    url: "/Produtos/BuscarAnuncio",
+                    data: { link : anuncio},
+                    success: function (dados) {
+                        var descricao = document.getElementById("Descricao")
+                        var objDados = jQuery.parseJSON(dados);
+                        $("#Descricao").val(objDados.Descricao);
+                        $("#Data").val(Date.now);
+                        $("#VlAnunciado").val(objDados.VlAnunciado);
+                        $("#Bairro").val(objDados.Bairro);
+                        $("#Telefone").val(objDados.Telefone);
+                        $("#Vendedor").val(objDados.Vendedor);
+                        $("#Anuncio").val(objDados.Anuncio);
+                    }
+                });
+            };
+        };
+    </script>
+}

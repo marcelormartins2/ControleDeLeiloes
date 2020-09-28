@@ -1,0 +1,21 @@
+﻿@model ControleDeLeiloes.Models.Leiloeiro
+
+
+<dl class='dl-horizontal'>
+
+    <dt>Nome:</dt>
+    <dd>@Html.DisplayFor(model => model.Nome)</dd>
+
+    <dt>Telefone:</dt>
+    <dd>@Html.DisplayFor(model => model.Telefone)</dd>
+
+    <dt>Site:</dt>
+    <dd> @if (!(Model.Site == null))
+    {<a href='@Model.Site' target='_blank'>@Model.Site</a>}</dd>
+
+    <dt>TaxaAvaliacaoPadrao:</dt>
+    <dd>@Html.DisplayFor(model => model.TaxaAvaliacaoPadrao)</dd>
+
+    <dt>TaxaVendaPadrao:</dt>
+    <dd>@Html.DisplayFor(model => model.TaxaVendaPadrao)</dd>
+</dl>
