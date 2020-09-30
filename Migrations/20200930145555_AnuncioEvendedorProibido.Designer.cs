@@ -28,7 +28,7 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<string>("Bairro")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("CodVendedor")
+                    b.Property<int>("IdVendedor")
                         .HasColumnType("int");
 
                     b.Property<string>("Descricao")

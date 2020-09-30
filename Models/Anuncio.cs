@@ -11,6 +11,7 @@ namespace ControleDeLeiloes.Models
     {
         public int Id { get; set; }
         public int IdAnuncio { get; set; }
+        public string Titulo { get; set; }
         public string Link { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yy}")]
         public DateTime DtPublicacao { get; set; }
@@ -24,7 +25,7 @@ namespace ControleDeLeiloes.Models
         public string Bairro { get; set; }
         public string Telefone { get; set; }
         public string Vendedor { get; set; }
-        public int CodVendedor { get; set; }
+        public string IdVendedor { get; set; }
         [DisplayFormat(DataFormatString = "{0:MM/yyyy}")]
         public DateTime DtVendedorDesde { get; set; }
 

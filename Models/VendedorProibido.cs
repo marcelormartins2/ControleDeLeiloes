@@ -8,7 +8,7 @@ namespace ControleDeLeiloes.Models
     public class VendedorProibido
     {
         public int Id { get; set; }
-        public int IdVendedor { get; set; }
+        public string IdVendedor { get; set; }
         public string Nome { get; set; }
     }
 }

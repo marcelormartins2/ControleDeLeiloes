@@ -25,7 +25,7 @@ namespace ControleDeLeiloes.Migrations
                     Bairro = table.Column<string>(nullable: true),
                     Telefone = table.Column<string>(nullable: true),
                     Vendedor = table.Column<string>(nullable: true),
-                    CodVendedor = table.Column<int>(nullable: false),
+                    IdVendedor = table.Column<int>(nullable: false),
                     DtVendedorDesde = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
