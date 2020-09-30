@@ -1,0 +1,96 @@
+﻿@model ControleDeLeiloes.Models.Anuncio
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Anuncio</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.IdAnuncio)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.IdAnuncio)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Link)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Link)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.DtPublicacao)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DtPublicacao)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Img1)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Img1)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Img2)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Img2)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Img3)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Img3)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Descricao)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Descricao)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.VlAnunciado)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlAnunciado)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Bairro)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Bairro)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Telefone)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Telefone)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Vendedor)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Vendedor)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.CodVendedor)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CodVendedor)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.DtVendedorDesde)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DtVendedorDesde)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
