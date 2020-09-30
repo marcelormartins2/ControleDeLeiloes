@@ -20,6 +20,8 @@ namespace ControleDeLeiloes.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<VendedorProibido>()
+                .HasIndex(b => b.IdVendedor);
             base.OnModelCreating(modelBuilder);
         }
 

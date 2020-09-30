@@ -16,6 +16,7 @@
             <div class="form-group">
                 <label class="control-label">Anuncio</label>
                 <input type="text" id="linkAnuncio" class="form-control" />
+                <input type="date" id="Data2" class="form-control" />
             </div>
 
             <div class="form-group">
@@ -52,10 +53,15 @@
                     url: "/Produtos/BuscarAnuncio",
                     data: { link : anuncio},
                     success: function (dados) {
-                        var descricao = document.getElementById("Descricao")
                         var objDados = jQuery.parseJSON(dados);
+                        var now = new Date();
+
+                        var day = ("0" + now.getDate()).slice(-2);
+                        var month = ("0" + (now.getMonth() + 1)).slice(-2);
+
+                        var today = now.getFullYear() + "-" + (month) + "-" + (day); var hoje = new Date();
                         $("#Descricao").val(objDados.Descricao);
-                        $("#Data").val(Date.now);
+                        $("#Data").val(today);
                         $("#VlAnunciado").val(objDados.VlAnunciado);
                         $("#Bairro").val(objDados.Bairro);
                         $("#Telefone").val(objDados.Telefone);

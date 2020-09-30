@@ -58,118 +58,6 @@ namespace ControleDeLeiloes.Controllers
         }
 
 
-        // POST: Produtos/BuscarAnuncio
-       
-        public JsonResult BuscarAnuncio(string link)
-        {
-            string jsonString;
-            var produto = new Produto();
-
-            if (ModelState.IsValid)
-            {
-                if (link != null)
-                {
-                    //var requisicaoWeb = WebRequest.CreateHttp("https://ma.olx.com.br/regiao-de-sao-luis/celulares/vendo-iphone-6-794456376");
-                    //var requisicaoWeb = WebRequest.CreateHttp("https://ma.olx.com.br/regiao-de-sao-luis/celulares/iphone-11-pro-792636771");
-                    
-                    var requisicaoWeb = WebRequest.CreateHttp(link);
-
-                    requisicaoWeb.Method = "GET";
-                    requisicaoWeb.UserAgent = "RequisicaoWebDemo";
-                    
-                    using (var resposta = requisicaoWeb.GetResponse())
-                    {
-                        var streamDados = resposta.GetResponseStream();
-                        StreamReader reader = new StreamReader(streamDados);
-                        object objResponse = reader.ReadToEnd();
-
-                        var texto = objResponse.ToString();
-                        int tamanho = 0;
-
-                        //Obter descrição
-                        int posicao =  texto.IndexOf("og:title") + 19;
-                        if (posicao > 0)
-                        {
-                            tamanho = texto.IndexOf("/><meta", posicao) - 1 - posicao;
-
-                            if (tamanho > 0)
-                            {
-                                produto.Descricao = texto.Substring(posicao, tamanho);
-                            }
-                        }
-
-                        //preço
-                        posicao = texto.IndexOf("price") + 8;
-                        if (posicao > 0)
-                        {
-                            tamanho = texto.IndexOf("},", posicao) - 1 - posicao;
-
-                            if (tamanho > 0)
-                            {
-                                produto.VlAnunciado = Int32.Parse(texto.Substring(posicao, tamanho));
-                            }
-                        }
-
-                        //nome vendedor
-                        posicao = texto.IndexOf("sellerName") + 13;
-                        tamanho = texto.IndexOf(",", posicao) - 1 - posicao;
-
-                        if (tamanho > 0)
-                        {
-                            produto.Vendedor = texto.Substring(posicao, tamanho);
-                        }
-
-
-                        //bairro
-                        posicao = texto.IndexOf("Bairro<");
-                        if (posicao > 0)
-                        {
-                            posicao = texto.IndexOf("<dd ", posicao);
-                            posicao = texto.IndexOf(">", posicao) + 1;
-                            tamanho = texto.IndexOf("</dd>", posicao) - posicao;
-
-                            if (tamanho > 0)
-                            {
-                                produto.Bairro = texto.Substring(posicao, tamanho);
-                            }
-                        }
-                        else
-                        {
-                            posicao = texto.IndexOf("Município<");
-                            if (posicao > 0)
-                            {
-                                posicao = texto.IndexOf("<dd ", posicao);
-                                    posicao = texto.IndexOf(">", posicao) + 1;
-                                tamanho = texto.IndexOf("</dd>", posicao) - posicao;
-
-                                if (tamanho > 0)
-                                {
-                                    produto.Bairro = texto.Substring(posicao, tamanho);
-                                }
-                            }
-                        }
-
-                        //telefone
-                        posicao = texto.IndexOf(";phone") + 38;
-                        if (posicao > 0)
-                        {
-                            tamanho = texto.IndexOf("&quot", posicao) - posicao;
-
-                            if (tamanho > 0)
-                            {
-                                produto.Telefone = texto.Substring(posicao, tamanho);
-                            }
-                        }
-
-                        produto.Data = DateTime.Now;
-                        produto.Anuncio = link;
-                    }
-                }
-            }
-            jsonString = JsonSerializer.Serialize(produto);
-            return Json(jsonString);
-
-        }
         public IActionResult Create()
         {
             return View();
@@ -271,6 +159,119 @@ namespace ControleDeLeiloes.Controllers
         private bool ProdutoExists(int id)
         {
             return _context.Produto.Any(e => e.Id == id);
+        }
+
+
+        // POST: Produtos/BuscarAnuncio
+
+        public JsonResult BuscarAnuncio(string link)
+        {
+            string jsonString;
+            var produto = new Produto();
+
+            if (ModelState.IsValid)
+            {
+                if (link != null)
+                {
+                    //var requisicaoWeb = WebRequest.CreateHttp("https://ma.olx.com.br/regiao-de-sao-luis/celulares/vendo-iphone-6-794456376");
+                    //var requisicaoWeb = WebRequest.CreateHttp("https://ma.olx.com.br/regiao-de-sao-luis/celulares/iphone-11-pro-792636771");
+
+                    var requisicaoWeb = WebRequest.CreateHttp(link);
+
+                    requisicaoWeb.Method = "GET";
+                    requisicaoWeb.UserAgent = "RequisicaoWebDemo";
+
+                    using (var resposta = requisicaoWeb.GetResponse())
+                    {
+                        var streamDados = resposta.GetResponseStream();
+                        StreamReader reader = new StreamReader(streamDados);
+                        object objResponse = reader.ReadToEnd();
+
+                        var texto = objResponse.ToString();
+                        int tamanho = 0;
+
+                        //Obter descrição
+                        int posicao = texto.IndexOf("og:title") + 19;
+                        if (posicao > 0)
+                        {
+                            tamanho = texto.IndexOf("/><meta", posicao) - 1 - posicao;
+
+                            if (tamanho > 0)
+                            {
+                                produto.Descricao = texto.Substring(posicao, tamanho);
+                            }
+                        }
+
+                        //preço
+                        posicao = texto.IndexOf("price") + 8;
+                        if (posicao > 0)
+                        {
+                            tamanho = texto.IndexOf("},", posicao) - 1 - posicao;
+
+                            if (tamanho > 0)
+                            {
+                                produto.VlAnunciado = Int32.Parse(texto.Substring(posicao, tamanho));
+                            }
+                        }
+
+                        //nome vendedor
+                        posicao = texto.IndexOf("sellerName") + 13;
+                        tamanho = texto.IndexOf(",", posicao) - 1 - posicao;
+
+                        if (tamanho > 0)
+                        {
+                            produto.Vendedor = texto.Substring(posicao, tamanho);
+                        }
+
+
+                        //bairro
+                        posicao = texto.IndexOf("Bairro<");
+                        if (posicao > 0)
+                        {
+                            posicao = texto.IndexOf("<dd ", posicao);
+                            posicao = texto.IndexOf(">", posicao) + 1;
+                            tamanho = texto.IndexOf("</dd>", posicao) - posicao;
+
+                            if (tamanho > 0)
+                            {
+                                produto.Bairro = texto.Substring(posicao, tamanho);
+                            }
+                        }
+                        else
+                        {
+                            posicao = texto.IndexOf("Município<");
+                            if (posicao > 0)
+                            {
+                                posicao = texto.IndexOf("<dd ", posicao);
+                                posicao = texto.IndexOf(">", posicao) + 1;
+                                tamanho = texto.IndexOf("</dd>", posicao) - posicao;
+
+                                if (tamanho > 0)
+                                {
+                                    produto.Bairro = texto.Substring(posicao, tamanho);
+                                }
+                            }
+                        }
+
+                        //telefone
+                        posicao = texto.IndexOf(";phone") + 38;
+                        if (posicao > 0)
+                        {
+                            tamanho = texto.IndexOf("&quot", posicao) - posicao;
+
+                            if (tamanho > 0)
+                            {
+                                produto.Telefone = texto.Substring(posicao, tamanho);
+                            }
+                        }
+
+                        produto.Anuncio = link;
+                    }
+                }
+            }
+            jsonString = JsonSerializer.Serialize(produto);
+            return Json(jsonString);
+
         }
     }
 }
