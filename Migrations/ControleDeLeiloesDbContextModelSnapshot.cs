@@ -26,9 +26,6 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<string>("Bairro")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("IdVendedor")
-                        .HasColumnType("int");
-
                     b.Property<string>("Descricao")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
@@ -38,8 +35,11 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<DateTime>("DtVendedorDesde")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("IdAnuncio")
-                        .HasColumnType("int");
+                    b.Property<string>("IdAnuncio")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("IdVendedor")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Img1")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -54,6 +54,9 @@ namespace ControleDeLeiloes.Migrations
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Telefone")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Titulo")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Vendedor")
@@ -289,8 +292,8 @@ namespace ControleDeLeiloes.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("IdVendedor")
-                        .HasColumnType("int");
+                    b.Property<string>("IdVendedor")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
 
                     b.Property<string>("Nome")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");

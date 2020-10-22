@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ControleDeLeiloes.Migrations
 {
     [DbContext(typeof(ControleDeLeiloesDbContext))]
-    [Migration("20200926192034_Models")]
-    partial class Models
+    [Migration("20200930225902_Inical")]
+    partial class Inical
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -18,6 +18,59 @@ namespace ControleDeLeiloes.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("ControleDeLeiloes.Models.Anuncio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Bairro")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Descricao")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<DateTime>("DtPublicacao")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DtVendedorDesde")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("IdAnuncio")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdVendedor")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Img1")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Img2")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Img3")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Telefone")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Titulo")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Vendedor")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<double?>("VlAnunciado")
+                        .HasColumnType("double");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Anuncio");
+                });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Leilao", b =>
                 {
@@ -88,9 +141,6 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<int>("ProdutoId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ProdutoId1")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
                     b.Property<double>("VlAvalicao")
                         .HasColumnType("double");
 
@@ -108,8 +158,6 @@ namespace ControleDeLeiloes.Migrations
                     b.HasIndex("LeilaoId");
 
                     b.HasIndex("ProdutoId");
-
-                    b.HasIndex("ProdutoId1");
 
                     b.ToTable("Lote");
                 });
@@ -238,6 +286,25 @@ namespace ControleDeLeiloes.Migrations
                         .HasName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("ControleDeLeiloes.Models.VendedorProibido", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdVendedor")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Nome")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdVendedor");
+
+                    b.ToTable("VendedorProibido");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -389,15 +456,11 @@ namespace ControleDeLeiloes.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ControleDeLeiloes.Models.Produto", null)
+                    b.HasOne("ControleDeLeiloes.Models.Produto", "Produto")
                         .WithMany("Lote")
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ControleDeLeiloes.Models.Usuario", "Produto")
-                        .WithMany()
-                        .HasForeignKey("ProdutoId1");
                 });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Produto", b =>

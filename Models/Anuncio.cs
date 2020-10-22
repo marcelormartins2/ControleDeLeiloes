@@ -10,7 +10,7 @@ namespace ControleDeLeiloes.Models
     public class Anuncio
     {
         public int Id { get; set; }
-        public int IdAnuncio { get; set; }
+        public string IdAnuncio { get; set; }
         public string Titulo { get; set; }
         public string Link { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yy}")]
