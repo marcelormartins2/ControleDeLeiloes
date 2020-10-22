@@ -8,7 +8,8 @@ namespace ControleDeLeiloes.Models
     public class Progresso
     {
         public int Etapa { get; set; }
-        public string Descricao { get; set; }
+        public int Quantidade { get; set; }
+        public string Estagio { get; set; }
 
     }
 }

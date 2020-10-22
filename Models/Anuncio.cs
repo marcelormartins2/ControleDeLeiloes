@@ -29,5 +29,10 @@ namespace ControleDeLeiloes.Models
         [DisplayFormat(DataFormatString = "{0:MM/yyyy}")]
         public DateTime DtVendedorDesde { get; set; }
 
+        public Anuncio Clone ()
+        {
+            return (Anuncio)this.MemberwiseClone();
+        }
+
     }
 }
