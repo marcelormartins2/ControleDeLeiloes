@@ -10,6 +10,7 @@ namespace ControleDeLeiloes.Models
         public int Etapa { get; set; }
         public int Quantidade { get; set; }
         public string Estagio { get; set; }
+        public bool Gravado { get; set; }
 
     }
 }

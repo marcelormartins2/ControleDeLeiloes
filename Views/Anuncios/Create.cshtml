@@ -7,7 +7,7 @@
 <div class="panel panel-default plain toggle panelMove panelClose panelRefresh">
     <!-- Start .panel -->
     <div class="panel-heading">
-        <h4 class="panel-title">Stripped progressbars</h4>
+        <h4 class="panel-title"></h4>
     </div>
     <div class="panel-body">
         <form asp-action="Create">
@@ -20,12 +20,26 @@
         </form>
         <form action="#" class="form-horizontal">
             <div class="form-group">
-                <div id="estagioBarra">
-                    <label class="col-lg-2 control-label">Atualizando</label>
-                </div>
+                <label id="estagioBarra" class="col-lg-2 control-label"></label>
                 <div class="col-lg-10">
-                    <div class="progress progress-striped">
-                        <div id="progressbar" class="progress-bar progress-bar-success" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 50%;"></div>
+                    <div id="divProgressbar">
+                        <div id="progressbar" class="progress-bar progress-bar-success"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="estagioBarra2" class="col-lg-2 control-label"></label>
+                <div class="col-lg-10">
+                    <div id="divProgressbar2">
+                        <div id="progressbar2" class="progress-bar progress-bar-success"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="estagioBarra3" class="col-lg-2 control-label"></label>
+                <div class="col-lg-10">
+                    <div id="divProgressbar3">
+                        <div id="progressbar3" class="progress-bar progress-bar-success"></div>
                     </div>
                 </div>
             </div>
@@ -43,6 +57,11 @@
 
     <script type="text/javascript">
         $(window).load(function () {
+
+            timer = setInterval(function () {
+                GetProgress(timer);
+            }, 500);
+
             $('#btnAtualizar').on('click', function () {
                 //timer = setInterval(function () {
                 //    GetProgress(timer);
@@ -64,17 +83,33 @@
                 url: '/Anuncios/GetProgress',
                 datatype: 'json',
                 success: function (progresso) {
-                    if (progresso.etapa != progresso.quantidade || progresso.estagio == "Buscando Páginas") {
-                        document.getElementById("estagioBarra").innerHTML = "<label class='col-lg-2 control-label'>" + progresso.estagio + "</label>";
-                        //$('#estagioBarra').attr("html", progresso.estagio);
-                        $('#progressbar').attr("aria-valuemax", progresso.quantidade);
-                        $('#progressbar').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
-                        $("#progressbar").html(progresso.etapa + "/" + progresso.quantidade);
+                    if (progresso.estagio != "Gravando Anuncios" && (progresso.etapa != progresso.quantidade || progresso.estagio == "Buscando Páginas" || progresso.estagio == "Buscando Anuncios")) {
+                        if (progresso.estagio == "Buscando Páginas") {
+                            document.getElementById("estagioBarra").innerHTML = "<label>" + progresso.estagio + "</label>";
+                            $('#divProgressbar').attr("class", "progress progress-striped");
+                            $('#progressbar').attr("aria-valuemax", progresso.quantidade);
+                            $('#progressbar').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
+                            $("#progressbar").html(progresso.etapa + "/" + progresso.quantidade);
+                        }
+                        else {
+                            document.getElementById("estagioBarra2").innerHTML = "<label>" + progresso.estagio + "</label>";
+                            $('#divProgressbar2').attr("class", "progress progress-striped");
+                            $('#progressbar2').attr("aria-valuemax", progresso.quantidade);
+                            $('#progressbar2').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
+                            $("#progressbar2").html(progresso.etapa + "/" + progresso.quantidade);
+                        }
                     }
                     else {
-                        $('#progressbar').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
-                        $("#progressbar").html(progresso.etapa + "/" + progresso.quantidade);
-                        clearInterval(timer);
+                        if (progresso.gravado == true) {
+                            document.getElementById("estagioBarra2").innerHTML = "<label>Buscando Anuncios</label>";
+                            $('#divProgressbar2').attr("class", "progress progress-striped");
+                            $('#progressbar2').attr("style", "width: 100%;");
+                            $("#progressbar2").html(progresso.quantidade + "/" + progresso.quantidade);
+                            document.getElementById("estagioBarra3").innerHTML = "<label> Anuncios gravados com sucesso</label>";
+                        }
+                        if (progresso.estagio != "Gravando Anuncios") {
+                            clearInterval(timer);
+                        }
                     }
                 }
             });

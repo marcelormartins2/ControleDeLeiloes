@@ -32,6 +32,10 @@ namespace ControleDeLeiloes.Controllers
         private static Progresso Progresso = new Progresso();
         public JsonResult GetProgress()
         {
+            if (Progresso.Gravado)
+            {
+                Progresso.Estagio = Progresso.Estagio;
+            }
             return Json(Progresso);
         }
 
@@ -60,17 +64,10 @@ namespace ControleDeLeiloes.Controllers
         }
 
         //Atualizar anuncios
-        struct AnuncioUnico
-        {
-            public double X, Y;
-            public override string ToString()
-            {
-                return "(" + X + "," + Y + ")";
-            }
-        }
+
         public async Task<bool> AtualizarAnuncios()
         {
-            if (Progresso.Etapa < 1)
+            if (Progresso.Etapa == 0)
             {
                 string texto2 = "";
 
@@ -80,7 +77,7 @@ namespace ControleDeLeiloes.Controllers
                 int tamanho = 0;
                 int x = 0;
                 int qntAnuncios = 0;
-                int qntPaginas = 3;
+                int qntPaginas = 1;
                 var anuncios = new List<Anuncio>();
                 var anuncioUnico = new Anuncio();
 
@@ -98,6 +95,7 @@ namespace ControleDeLeiloes.Controllers
                 Progresso.Quantidade = qntPaginas;
                 Progresso.Etapa = 0;
                 Progresso.Estagio = "Buscando Páginas";
+                Progresso.Gravado = false;
 
                 for (int i = 0; i < qntPaginas; i++)
                 {
@@ -132,18 +130,20 @@ namespace ControleDeLeiloes.Controllers
                 }
 
                 //barra de progresso
+                qntAnuncios = 10;
                 Progresso.Quantidade = qntAnuncios;
                 Progresso.Etapa = 0;
-                Progresso.Estagio = "Anuncios";
+                Progresso.Estagio = "Buscando Anuncios";
 
                 for (int i = 0; i < qntPaginas; i++)
                 {
-                    //Obter anuncios
+                    posicaoInicial = 0;
                     while (texto[i].IndexOf("data-lurker_list_id", posicaoInicial) > -1 && qntAnuncios > 0)
                     {
                         posicaoInicial = texto[i].IndexOf("data-lurker_list_id", posicaoInicial) + 10;
 
                         qntAnuncios--;
+
                         //IdAnuncio
                         posicao = texto[i].IndexOf("data-lurker_list_id", posicao) + 21;
                         tamanho = texto[i].IndexOf("data-lurker", posicao) - 2 - posicao;
@@ -259,8 +259,8 @@ namespace ControleDeLeiloes.Controllers
                                     "direto da fabrica",
                                     "em promoção",
                                     "em promocao",
-                                    "diretamente da fabrica",
-                                    "diretamente da fábrica"
+                                    "da fabrica",
+                                    "da fábrica",
                                 };
                                 int count = 0;
                                 Boolean vendedorProibido = false;
@@ -379,45 +379,48 @@ namespace ControleDeLeiloes.Controllers
                             }
                         }
                     }
+                }
+                //cadastra anuncios no banco de dados
 
-                    //cadastra anuncios no banco de dados
+                if (ModelState.IsValid)
+                {
+                    // barra de progressão
+                    Progresso.Estagio = "Gravando Anuncios";
+                    
 
-                    if (ModelState.IsValid)
+                    Anuncio novoAnuncio = await _context.Anuncio.OrderByDescending(o => o.Id).FirstOrDefaultAsync();
+                    //Anuncio novoAnuncio = _context.Anuncio.OrderByDescending(o => o.Id).FirstOrDefault();
+                    int lastId = 0;
+                    if (novoAnuncio != null)
                     {
-                        Anuncio novoAnuncio = await _context.Anuncio.OrderByDescending(o => o.Id).FirstOrDefaultAsync();
-                        //Anuncio novoAnuncio = _context.Anuncio.OrderByDescending(o => o.Id).FirstOrDefault();
-                        int lastId = 0;
-                        if (novoAnuncio != null)
-                        {
-                            lastId = novoAnuncio.Id;
-                        }
-
-                        foreach (Anuncio item in anuncios)
-                        {
-                            if (lastId > 0)
-                            {
-                                item.Id = lastId + 1;
-                            }
-                            else
-                            {
-                                item.Id = 1;
-                            }
-
-                            _context.Add(item);
-                            await _context.SaveChangesAsync();
-                            //_context.SaveChanges();
-                            lastId++;
-                        }
-                        //return RedirectToAction(nameof(Index));
-                        Progresso.Etapa = 0;
-                        return true;
+                        lastId = novoAnuncio.Id;
                     }
 
-                }
-            }
-            //return RedirectToAction(nameof(Index));
+                    foreach (Anuncio item in anuncios)
+                    {
+                        if (lastId > 0)
+                        {
+                            item.Id = lastId + 1;
+                        }
+                        else
+                        {
+                            item.Id = 1;
+                        }
 
-            Progresso.Etapa = 0;
+                        _context.Add(item);
+                        await _context.SaveChangesAsync();
+                        //_context.SaveChanges();
+                        lastId++;
+                    }
+                    //return RedirectToAction(nameof(Index));
+                    Progresso.Gravado = true;
+                    Progresso.Etapa = 0;
+                    //Progresso.Estagio = "";
+                    return true;
+                }
+                //return RedirectToAction(nameof(Index));
+                Progresso.Etapa = 0;
+            }
             return true;
         }
 
