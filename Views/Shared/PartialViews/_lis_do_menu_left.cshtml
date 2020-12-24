@@ -7,7 +7,18 @@
     </a>
 </li>
 <li>
-    <a asp-controller="Anuncios" asp-action="Create"><span class="txt">Anuncios</span></a>
+    <a href="#"><i class="l-ecommerce-graph1"></i> <span class="txt">Anuncios</span></a>
+    <ul class="sub">
+        <li>
+            <a asp-controller="Anuncios" asp-action="Index"><span class="txt">Listar</span></a>
+        </li>
+        <li>
+            <a asp-controller="Anuncios" asp-action="Create"><span class="txt">Atualizar</span></a>
+        </li>
+        <li>
+            <a asp-controller="Anuncios" asp-action="EliminarAnunciosInvalidos"><span class="txt">Eliminar inválidos</span></a>
+        </li>
+    </ul>
 </li>
 <li>
     <a asp-controller="Produtos" asp-action="Index"><span class="txt">Produtos</span></a>

@@ -7,10 +7,16 @@ namespace ControleDeLeiloes.Models
 {
     public class Progresso
     {
-        public int Etapa { get; set; }
-        public int Quantidade { get; set; }
+        public int EtapaPagina { get; set; }
+        public int EtapaAnuncio { get; set; }
+        public int QuantidadePaginas { get; set; }
+        public int QuantidadeAnuncios { get; set; }
         public string Estagio { get; set; }
         public bool Gravado { get; set; }
+        public String MensagemErro { get; set; }
+        public int RegistrosBD { get; set; }
+        public int RegistrosBDAnalisados { get; set; }
+        public int RegistrosBDApagados { get; set; }
 
     }
 }

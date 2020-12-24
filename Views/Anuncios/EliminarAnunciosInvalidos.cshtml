@@ -1,0 +1,128 @@
+﻿@{
+    ViewData["Title"] = "Eliminar anuncios inválidos";
+}
+
+<div class="panel panel-default plain toggle panelMove panelClose panelRefresh">
+    <!-- Start .panel -->
+    <div class="panel-heading">
+        <h4 class="panel-title"></h4>
+    </div>
+    <div class="panel-body">
+        <form asp-action="EliminarAnunciosInvalidos">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                @*<input id="btnAtualizar" type="submit" value="Atualizar Anuncios" class="btn btn-primary mr5 mb10" />*@
+                <button id="btnDeletarAnunciosInvalidos" type="button" class="btn btn-primary mr5 mb10">Eliminar anuncios inválidos</button>
+                <p><a asp-action="Index">Voltar para lista de anuncios.</a></p>
+            </div>
+        </form>
+        <form action="#" class="form-horizontal">
+            <div class="form-group">
+                <label id="estagioBarra" class="col-lg-2 control-label"></label>
+                <div class="col-lg-10">
+                    <div id="divProgressbar">
+                        <div id="progressbar" class="progress-bar progress-bar-success"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label id="estagioBarra2" class="col-lg-2 control-label"></label>
+            </div>
+            <div class="form-group">
+                <label id="estagioBarra3" class="col-lg-2 control-label"></label>
+            </div>
+            <div class="form-group">
+                <label id="msgErro" class="col-lg-2 control-label"></label>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+
+@section scripts
+{
+
+    <script type="text/javascript">
+
+        $(window).bind('beforeunload', function () {
+            if (typeof timer != 'undefined') {
+                clearInterval(timer);
+            }
+        });
+
+        $(window).load(function () {
+
+            var contador = 0;
+
+            if (typeof timer != 'undefined') {
+                clearInterval(timer);
+            }
+
+            //timer = setInterval(function () {
+            //    GetProgresso(timer);
+            //}, 500);
+
+            $('#btnDeletarAnunciosInvalidos').on('click', function () {
+
+                document.getElementById("estagioBarra").innerHTML = "<label></label>";
+                $('#divProgressbar').attr("class", "");
+                $('#progressbar').attr("style", "");
+                $("#progressbar").html("");
+
+                $.ajax({
+                    url: "/Anuncios/DeletarInvalidos",
+                    type: "POST"
+                });
+
+                //clearInterval(timer);
+                timer = setInterval(function () {
+                    GetProgresso(timer);
+                }, 500);
+            })
+
+            function GetProgresso(timer) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/Anuncios/GetProgresso',
+                    datatype: 'json',
+                    success: function (progresso) {
+
+                        contador++;
+
+                        if (progresso.mensagemErro != null) {
+                            document.getElementById("msgErro").innerHTML = "<label>Menssagen de erro:" + progresso.mensagemErro;
+                        }
+
+                        if (progresso.registrosBDAnalisados  > 0) {
+                            document.getElementById("estagioBarra").innerHTML = "<label>Anuncios analisados</label>";
+                            $('#divProgressbar').attr("class", "progress progress-striped");
+                            $('#progressbar').attr("aria-valuemax", progresso.registrosBD);
+                            $('#progressbar').attr("style", "width: " + (progresso.registrosBDAnalisados / progresso.registrosBD) * 100 + "%;");
+                            $("#progressbar").html(progresso.registrosBDAnalisados + "/" + progresso.registrosBD);
+                        }
+                        if (progresso.registrosBDApagados > 0) {
+                            document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios&nbsp;deletados&nbsp;=&nbsp;" + progresso.registrosBDApagados + "</label>";
+                        }
+                        if (progresso.registrosBDAnalisados == progresso.registrosBD || contador > 10000) {
+                            clearInterval(timer);
+                            document.getElementById("estagioBarra3").innerHTML = "<label>Registros&nbsp;apagados&nbsp;=&nbsp;" + progresso.registrosBDApagados + "</label>";
+                        } else
+                        {
+                            document.getElementById("estagioBarra3").innerHTML = "<label>" + contador + "/" + contador +
+                                "/registrosBD=" + progresso.registrosBD +
+                                "/registrosBDAnalisados=" + progresso.registrosBDAnalisados +
+                                "/registrosBDApagados=" +   progresso.registrosBDApagados +"</label>";
+                        }
+                    }
+                });
+            }
+        });
+
+    </script>
+
+}

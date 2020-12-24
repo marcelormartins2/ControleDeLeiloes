@@ -16,6 +16,7 @@
             <div class="form-group">
                 @*<input id="btnAtualizar" type="submit" value="Atualizar Anuncios" class="btn btn-primary mr5 mb10" />*@
                 <button id="btnAtualizar" type="button" class="btn btn-primary mr5 mb10">Atualizar Anuncios</button>
+                <p><a asp-action="Index">Voltar para lista de anuncios.</a></p>
             </div>
         </form>
         <form action="#" class="form-horizontal">
@@ -43,6 +44,12 @@
                     </div>
                 </div>
             </div>
+            <div class="form-group">
+                <label id="msgErro" class="col-lg-2 control-label"></label>
+            </div>
+            <div class="form-group">
+                <label id="estagioBarra4" class="col-lg-2 control-label"></label>
+            </div>
         </form>
     </div>
 </div>
@@ -56,64 +63,150 @@
 {
 
     <script type="text/javascript">
+
+        $(window).bind('beforeunload', function () {
+            if (typeof timer != 'undefined') {
+                clearInterval(timer);
+            }
+        });
+
         $(window).load(function () {
 
+            var contador = 0;
+            var ultimaAtualizacaoAnuncio = [0, 0]; //armazena a etapa e o contador para verificação de loop infinito
+            var ultimaAtualizacaoPagina = [0, 0];
+
+            if (typeof timer != 'undefined') {
+                clearInterval(timer);
+            }
+
             timer = setInterval(function () {
-                GetProgress(timer);
+                GetProgresso(timer);
             }, 500);
 
             $('#btnAtualizar').on('click', function () {
                 //timer = setInterval(function () {
                 //    GetProgress(timer);
                 //}, 2000);
+
+                document.getElementById("estagioBarra").innerHTML = "<label></label>";
+                $('#divProgressbar').attr("class", "");
+                $('#progressbar').attr("style", "");
+                $("#progressbar").html("");
+
+                document.getElementById("estagioBarra2").innerHTML = "<label></label>";
+                $('#divProgressbar2').attr("class", "");
+                $('#progressbar2').attr("style", "");
+                $("#progressbar2").html("");
+                document.getElementById("estagioBarra3").innerHTML = "<label></label>";
+
                 $.ajax({
                     url: "/Anuncios/AtualizarAnuncios",
                     type: "POST"
                 });
 
+                clearInterval(timer);
                 timer = setInterval(function () {
-                    GetProgress(timer);
+                    GetProgresso(timer);
                 }, 500);
 
             })
-        });
-        function GetProgress(timer) {
-            $.ajax({
-                type: 'GET',
-                url: '/Anuncios/GetProgress',
-                datatype: 'json',
-                success: function (progresso) {
-                    if (progresso.estagio != "Gravando Anuncios" && (progresso.etapa != progresso.quantidade || progresso.estagio == "Buscando Páginas" || progresso.estagio == "Buscando Anuncios")) {
-                        if (progresso.estagio == "Buscando Páginas") {
-                            document.getElementById("estagioBarra").innerHTML = "<label>" + progresso.estagio + "</label>";
-                            $('#divProgressbar').attr("class", "progress progress-striped");
-                            $('#progressbar').attr("aria-valuemax", progresso.quantidade);
-                            $('#progressbar').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
-                            $("#progressbar").html(progresso.etapa + "/" + progresso.quantidade);
+
+            function GetProgresso(timer) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/Anuncios/GetProgresso',
+                    datatype: 'json',
+                    success: function (progresso) {
+
+                        contador++;
+                        document.getElementById("estagioBarra4").innerHTML = "<label>" + contador +
+                            "/EP" + progresso.etapaPagina + "/" + progresso.quantidadePaginas +
+                            "/EA" + progresso.etapaAnuncio + "/" + progresso.quantidadeAnuncios + "</label>";
+                        if (progresso.mensagemErro != null) {
+                            document.getElementById("msgErro").innerHTML = "<label>Menssagen de erro:" + progresso.mensagemErro;
                         }
-                        else {
-                            document.getElementById("estagioBarra2").innerHTML = "<label>" + progresso.estagio + "</label>";
+                        if (progresso.etapaPagina > 0) {
+                            document.getElementById("estagioBarra").innerHTML = "<label>Páginas</label>";
+                            $('#divProgressbar').attr("class", "progress progress-striped");
+                            $('#progressbar').attr("aria-valuemax", progresso.quantidadePaginas);
+                            $('#progressbar').attr("style", "width: " + (progresso.etapaPagina / progresso.quantidadePaginas) * 100 + "%;");
+                            $("#progressbar").html(progresso.etapaPagina + "/" + progresso.quantidadePaginas);
+                            if (progresso.quantidadePaginas < progresso.etapaPagina) {
+                                if (ultimaAtualizacaoPagina[0] != progresso.etapaPagina) {
+                                    ultimaAtualizacaoPagina[0] = progresso.etapaPagina;
+                                    ultimaAtualizacaoPagina[1] = contador;
+                                } else if (ultimaAtualizacaoPagina[1] + 100 < contador) {
+                                    $.ajax({
+                                        type: 'GET',
+                                        url: '/Anuncios/ResetProgresso',
+                                        datatype: 'json'
+                                    });
+                                    clearInterval(timer);
+
+                                }
+                            }
+                        }
+
+                        if (progresso.etapaAnuncio > 0) {
+                            document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios</label>";
                             $('#divProgressbar2').attr("class", "progress progress-striped");
                             $('#progressbar2').attr("aria-valuemax", progresso.quantidade);
-                            $('#progressbar2').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
-                            $("#progressbar2").html(progresso.etapa + "/" + progresso.quantidade);
+                            $('#progressbar2').attr("style", "width: " + (progresso.etapaAnuncio / progresso.quantidadeAnuncios) * 100 + "%;");
+                            $("#progressbar2").html(progresso.etapaAnuncio + "/" + progresso.quantidadeAnuncios);
+                            if (progresso.quantidadeAnuncios != progresso.etapaAnuncio) {
+                                ultimaAtualizacaoAnuncio = (ultimaAtualizacaoAnuncio != progresso.etapaAnuncio) ? progresso.etapaAnuncio : ultimaAtualizacaoAnuncio;
+                            }
+
                         }
-                    }
-                    else {
-                        if (progresso.gravado == true) {
-                            document.getElementById("estagioBarra2").innerHTML = "<label>Buscando Anuncios</label>";
-                            $('#divProgressbar2').attr("class", "progress progress-striped");
-                            $('#progressbar2').attr("style", "width: 100%;");
-                            $("#progressbar2").html(progresso.quantidade + "/" + progresso.quantidade);
-                            document.getElementById("estagioBarra3").innerHTML = "<label> Anuncios gravados com sucesso</label>";
+
+                        //if (!progresso.gravado && (progresso.etapa < progresso.quantidade || progresso.estagio == "Páginas")) {
+                        //if (progresso.etapa > 0 && progresso.estagio == "Páginas") {
+                        //    document.getElementById("estagioBarra").innerHTML = "<label>" + progresso.estagio + "</label>";
+                        //    $('#divProgressbar').attr("class", "progress progress-striped");
+                        //    $('#progressbar').attr("aria-valuemax", progresso.quantidade);
+                        //    $('#progressbar').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
+                        //    $("#progressbar").html(progresso.etapa + "/" + progresso.quantidade);
+                        //}
+                        //else if (progresso.estagio == "Anuncios") {
+                        //    document.getElementById("estagioBarra2").innerHTML = "<label>" + progresso.estagio + "</label>";
+                        //    $('#divProgressbar2').attr("class", "progress progress-striped");
+                        //    $('#progressbar2').attr("aria-valuemax", progresso.quantidade);
+                        //    $('#progressbar2').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
+                        //    $("#progressbar2").html(progresso.etapa + "/" + progresso.quantidade);
+                        //} else if (progresso.quantidade > 0) {
+                        //    clearInterval(timer)
+                        //};
+                        //}
+                        //else {
+                        if (progresso.gravado) {
+                            if (progresso.quantidadePaginas > 0) {
+                                document.getElementById("estagioBarra").innerHTML = "<label>Páginas</label>";
+                                $('#divProgressbar').attr("class", "progress progress-striped");
+                                $('#progressbar').attr("style", "width: 100%;");
+                                $("#progressbar").html(progresso.quantidadePaginas + "/" + progresso.quantidadePaginas);
+                            }
+
+                            if (progresso.quantidadeAnuncios > 0) {
+                                document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios</label>";
+                                $('#divProgressbar2').attr("class", "progress progress-striped");
+                                $('#progressbar2').attr("style", "width: 100%;");
+                                $("#progressbar2").html(progresso.quantidadeAnuncios + "/" + progresso.quantidadeAnuncios);
+                                document.getElementById("estagioBarra3").innerHTML = "<label>Atualização concluída</label>";
+                            } else {
+                                //if (progresso.etapaAnuncio == 0 && document.getElementById("estagioBarra2").innerHTML == "<label>Anuncios</label>") {
+                                document.getElementById("estagioBarra3").innerHTML = "<label>Não há novos anuncios</label>";
+                                //}
+                            }
                         }
-                        if (progresso.estagio != "Gravando Anuncios") {
+                        if (progresso.etapaAnuncio == 0 && progresso.etapaPagina == 0) {
                             clearInterval(timer);
                         }
                     }
-                }
-            });
-        }
+                });
+            }
+        });
+
     </script>
 
 }

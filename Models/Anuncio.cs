@@ -29,10 +29,11 @@ namespace ControleDeLeiloes.Models
         [DisplayFormat(DataFormatString = "{0:MM/yyyy}")]
         public DateTime DtVendedorDesde { get; set; }
 
-        public Anuncio Clone ()
-        {
-            return (Anuncio)this.MemberwiseClone();
-        }
+        //Caso seja preciso clonar a classe - usado para evitar a associação por ponteiro na memória
+        //public Anuncio Clone ()
+        //{
+        //    return (Anuncio)this.MemberwiseClone();
+        //}
 
     }
 }
