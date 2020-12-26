@@ -28,6 +28,7 @@ namespace ControleDeLeiloes.Models
         public string IdVendedor { get; set; }
         [DisplayFormat(DataFormatString = "{0:MM/yyyy}")]
         public DateTime DtVendedorDesde { get; set; }
+        public bool NotView { get; set; }
 
         //Caso seja preciso clonar a classe - usado para evitar a associação por ponteiro na memória
         //public Anuncio Clone ()

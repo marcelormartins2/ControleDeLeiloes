@@ -7,6 +7,10 @@
 <h2>Details</h2>
 
 <div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Voltar para lista</a>
+</div>
+<div>
     <h4>Anuncio</h4>
     <hr />
     <dl class="dl-horizontal">
@@ -17,34 +21,22 @@
             @Html.DisplayFor(model => model.IdAnuncio)
         </dd>
         <dt>
+            @Html.DisplayNameFor(model => model.Titulo)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Titulo)
+        </dd>
+        <dt>
             @Html.DisplayNameFor(model => model.Link)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Link)
+            <a href="@Html.DisplayFor(model => model.Link)" target="_blank">@Html.DisplayFor(model => model.Link)</a>
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.DtPublicacao)
         </dt>
         <dd>
             @Html.DisplayFor(model => model.DtPublicacao)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Img1)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Img1)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Img2)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Img2)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Img3)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Img3)
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.Descricao)
@@ -88,9 +80,27 @@
         <dd>
             @Html.DisplayFor(model => model.DtVendedorDesde)
         </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Img1)
+        </dt>
+        <dd>
+            <img src="@Html.DisplayFor(model => model.Img1)" alt="Image1">
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Img2)
+        </dt>
+        <dd>
+            <img src="@Html.DisplayFor(model => model.Img2)" alt="Image2">
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Img3)
+        </dt>
+        <dd>
+            <img src="@Html.DisplayFor(model => model.Img3)" alt="Image3">
+        </dd>
     </dl>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Voltar para lista</a>
 </div>

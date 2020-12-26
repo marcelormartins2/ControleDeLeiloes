@@ -34,9 +34,41 @@ namespace ControleDeLeiloes.Controllers
             return Json(Progresso);
         }
         // GET: Anuncios
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool? verNotView)
         {
-            return View(await _context.Anuncio.ToListAsync());
+            if (verNotView == null || verNotView == false)
+            {
+                ViewData["verNotView"] = false; 
+                return View(await _context.Anuncio.Where(m => m.NotView == false).ToListAsync());
+            }
+            else 
+            {
+                ViewData["verNotView"] = true;
+                return View(await _context.Anuncio.ToListAsync());
+            }
+        }
+        //POST: Atualizar NotView em anuncio
+        public async Task<bool> UpdateNotView (bool notView, int id)
+        {
+            var anuncio = await _context.Anuncio.FindAsync(id);
+            if (anuncio == null)
+            {
+                return false;
+            }
+            anuncio.NotView = notView;
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(anuncio);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                        return false;
+                }
+            }
+            return true;
         }
         // GET: Anuncios/EliminarAnunciosInvalidos
         public IActionResult EliminarAnunciosInvalidos()

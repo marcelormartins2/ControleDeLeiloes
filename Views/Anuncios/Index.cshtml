@@ -13,49 +13,68 @@
                         <!-- Start .panel -->
                         <div class="panel-heading">
                             <h4 class="panel-title">Anuncios</h4>
-                            @*<a asp-action="Create">
-                                    Adicionar
-                                </a>*@
+                            @if (ViewBag.verNotView)
+                            {
+                                <a asp-controller="Anuncios" asp-action="Index" asp-route-verNotView=false><span title="Não visualizar todos">Não visualizar todos</span> </a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Anuncios" asp-action="Index" asp-route-verNotView=true><span title="Visualizar todos">Visualizar todos</span> </a>
+                            }
                         </div>
                         <div class="panel-body">
-                            <table id="minhaTabela" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                            <table id="ListaAnuncios" class="table table-striped table-bordered" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
+                                        <th>Imagem</th>
                                         <th>Titulo</th>
                                         <th>Valor</th>
-                                        <th>Descrição</th>
                                         <th>DataPubl</th>
+                                        <th>Não Visualizar</th>
                                     </tr>
                                 </thead>
                                 <tfoot>
                                     <tr>
+                                        <th>Imagem</th>
                                         <th>Titulo</th>
                                         <th>Valor</th>
-                                        <th>Descrição</th>
                                         <th>DataPubl</th>
+                                        <th>Não Visualizar</th>
                                     </tr>
                                 </tfoot>
                                 <tbody>
                                     @foreach (var item in Model)
                                     {
-                                        <tr>
+                                        <tr id='@item.Id'>
                                             <td>
-                                                <a href='@item.Link' target="_blank">
+                                                <img src="@Url.Content(item.Img1)" alt="Image" style="height:200px;width:200px;" />
+                                            </td>
+                                            <td>
+                                                @*<a href='@item.Link' target="_blank">*@
+                                                <a asp-action="Details" asp-route-id='@item.Id'>
                                                     @Html.DisplayFor(modelItem => item.Titulo)
                                                 </a>
                                             </td>
                                             <td>
                                                 @Html.DisplayFor(modelItem => item.VlAnunciado)
                                             </td>
-                                            <td class="col-lg-1">
-                                                @Html.DisplayFor(modelItem => item.Descricao)
-                                            </td>
                                             <td>
                                                 @Html.DisplayFor(modelItem => item.DtPublicacao)
                                             </td>
+                                            <td>
+                                                @Html.CheckBoxFor(modelItem => item.NotView, new
+                                           {
+                                               onclick = "UpdateNotView(this)",
+                                               data_anuncioid = item.Id
+                                           })
+                                            </td>
+                                            @*<td class="text-right">
+                                                    <a asp-controller="Anuncios" asp-action="NotView" asp-route-id="@item.Id"><span class="che" title="Editar Paciente"></span> </a>
+                                                    <a asp-controller="Paciente" asp-action="Details" asp-route-id="@item.Id"><span class="fa fa-search fa-2x" title="Detalhes Paciente"></span> </a>
+                                                    <a asp-controller="Paciente" asp-action="Delete" asp-route-id="@item.Id"><span class="fa fa-trash fa-2x" title="Excluir Paciente"></span> </a>
+                                                </td>*@
                                         </tr>
                                     }
-
                                 </tbody>
                             </table>
                         </div>
@@ -79,7 +98,7 @@
 
     <script type="text/javascript">
         $j2(document).ready(function () {
-            $('#minhaTabela').DataTable({
+            $('#ListaAnuncios').DataTable({
                 "language": {
                     "lengthMenu": "Mostrando _MENU_ registros por página",
                     "zeroRecords": "Nada encontrado",
@@ -89,5 +108,37 @@
                 }
             });
         });
+
+       function UpdateNotView(elem) {
+            var isDone = $(elem).is(':checked');
+            var cid = $(elem).data('anuncioid');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("UpdateNotView", "Anuncios")',
+                data: { NotView: isDone,Id:cid },
+                success: function(res) {
+                    console.log(res);
+                }
+            });
+
+           if (isDone) {
+               var table = document.getElementById("ListaAnuncios");
+               var rowIndex = document.getElementById(cid).rowIndex;
+               table.deleteRow(rowIndex);
+           }
+        }
+
+        function VerNotView(elem) {
+            var isDone = $(elem).is(':checked');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Index", "Anuncios")',
+                data: { VerNotView: isDone},
+                success: function(res) {
+                    console.log(res);
+                }
+            });
+        }
+
     </script>
 }
