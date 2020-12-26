@@ -22,7 +22,7 @@ namespace ControleDeLeiloes.Controllers
         }
 
         //ProgressBar
-        private static Progresso Progresso = new Progresso {RegistrosBDAnalisados=-1};
+        private static Progresso Progresso = new Progresso { RegistrosBDAnalisados = -1 };
         public JsonResult GetProgresso()
         {
             return Json(Progresso);
@@ -38,17 +38,17 @@ namespace ControleDeLeiloes.Controllers
         {
             if (verNotView == null || verNotView == false)
             {
-                ViewData["verNotView"] = false; 
+                ViewData["verNotView"] = false;
                 return View(await _context.Anuncio.Where(m => m.NotView == false).ToListAsync());
             }
-            else 
+            else
             {
                 ViewData["verNotView"] = true;
                 return View(await _context.Anuncio.ToListAsync());
             }
         }
         //POST: Atualizar NotView em anuncio
-        public async Task<bool> UpdateNotView (bool notView, int id)
+        public async Task<bool> UpdateNotView(bool notView, int id)
         {
             var anuncio = await _context.Anuncio.FindAsync(id);
             if (anuncio == null)
@@ -65,14 +65,14 @@ namespace ControleDeLeiloes.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                        return false;
+                    return false;
                 }
             }
             return true;
         }
         // GET: Anuncios/EliminarAnunciosInvalidos
         public IActionResult EliminarAnunciosInvalidos()
-        {           
+        {
             return View();
         }
         //// POST: Anuncios/EliminarAnunciosInvalidos
@@ -137,7 +137,7 @@ namespace ControleDeLeiloes.Controllers
         {
             if (Progresso.EtapaAnuncio == 0 && Progresso.EtapaPagina == 0)
             {
-                int qntPaginas = 1;
+                int qntPaginas = 10;
 
                 //barra de progresso
                 string[] texto = new string[qntPaginas];
@@ -217,6 +217,10 @@ namespace ControleDeLeiloes.Controllers
                     for (int i = 0; i < qntPaginas; i++)
                     {
                         posicaoInicial = 0;
+                        posicao = 0;
+                        posAnt = 0;
+                        posicao1 = 0;
+                        
                         while (texto[i].IndexOf("data-lurker_list_id", posicaoInicial) > -1 && qntAnuncios > 0)
                         {
                             posicaoInicial = texto[i].IndexOf("data-lurker_list_id", posicaoInicial) + 10;
@@ -244,8 +248,14 @@ namespace ControleDeLeiloes.Controllers
                                 tamanho = texto[i].IndexOf(" target=", posicao) - 1 - posicao;
                                 if (tamanho > 0)
                                 {
-                                    var txt = texto[i].Substring(posicao, tamanho);
-                                    anuncioUnico.Link = txt;
+                                    Uri uriResult;
+                                    string uriTmp = texto[i].Substring(posicao, tamanho);
+                                    bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
+                                        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+                                    if (result)
+                                    {
+                                        anuncioUnico.Link = uriTmp;
+                                    }
                                 }
 
                                 //acessr Link
@@ -331,20 +341,20 @@ namespace ControleDeLeiloes.Controllers
                                         //if (_context.VendedorProibido.FirstOrDefaultAsync(v => v.IdVendedor == anuncioUnico.IdVendedor) == null)
                                         //{
                                         var excludentes = new List<string>
-                                {
-                                    "anúncio profissional",
-                                    "a partir de ",
-                                    "dividimos em até ",
-                                    "dividimos em ate ",
-                                    "frete grátis",
-                                    "frete gratis",
-                                    "direto da fábrica",
-                                    "direto da fabrica",
-                                    "em promoção",
-                                    "em promocao",
-                                    "da fabrica",
-                                    "da fábrica",
-                                };
+                                        {
+                                            "anúncio profissional",
+                                            "a partir de ",
+                                            "dividimos em até ",
+                                            "dividimos em ate ",
+                                            "frete grátis",
+                                            "frete gratis",
+                                            "direto da fábrica",
+                                            "direto da fabrica",
+                                            "em promoção",
+                                            "em promocao",
+                                            "da fabrica",
+                                            "da fábrica",
+                                        };
                                         int count = 0;
                                         Boolean vendedorProibido = false;
                                         foreach (string element in excludentes)
@@ -372,17 +382,24 @@ namespace ControleDeLeiloes.Controllers
                                                 tamanho = texto2.IndexOf("alt=", posicao1) - 2 - posicao1;
                                                 if (tamanho > 0)
                                                 {
-                                                    switch (count)
+                                                    Uri uriResult;
+                                                    string uriTmp = texto2.Substring(posicao1, tamanho);
+                                                    bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
+                                                        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+                                                    if (result)
                                                     {
-                                                        case 1:
-                                                            anuncioUnico.Img1 = texto2.Substring(posicao1, tamanho);
-                                                            break;
-                                                        case 2:
-                                                            anuncioUnico.Img2 = texto2.Substring(posicao1, tamanho);
-                                                            break;
-                                                        case 3:
-                                                            anuncioUnico.Img3 = texto2.Substring(posicao1, tamanho);
-                                                            break;
+                                                        switch (count)
+                                                        {
+                                                            case 1:
+                                                                anuncioUnico.Img1 = uriTmp;
+                                                                break;
+                                                            case 2:
+                                                                anuncioUnico.Img2 = uriTmp;
+                                                                break;
+                                                            case 3:
+                                                                anuncioUnico.Img3 = uriTmp;
+                                                                break;
+                                                        }
                                                     }
                                                 }
                                                 posicao1 = texto2.IndexOf("lkx530-4 hXBoAC", posicao1);
@@ -466,6 +483,7 @@ namespace ControleDeLeiloes.Controllers
                                                 _context.Add(anuncioUnico);
                                                 await _context.SaveChangesAsync();
                                                 lastId++;
+                                                anuncioUnico = new Anuncio();
                                             }
 
                                             //Barra de Progresso
@@ -482,7 +500,7 @@ namespace ControleDeLeiloes.Controllers
                 }
                 catch (Exception e)
                 {
-                    Progresso.MensagemErro = e.Message;
+                    Progresso.MensagemErro = e.Message + " / " + e.StackTrace;
                     throw;
                 }
 
