@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ControleDeLeiloes.Controllers
@@ -20,6 +21,10 @@ namespace ControleDeLeiloes.Controllers
         {
             _context = context;
         }
+
+        static readonly WebRequest s_WebRequest = WebRequest.CreateHttp("https://df.olx.com.br/para-a-sua-casa?sf=1");
+        static readonly List<String> texto = new List<string>();
+        static readonly int qntPaginas = 10;
 
         //ProgressBar
         private static Progresso Progresso = new Progresso { RegistrosBDAnalisados = -1 };
@@ -137,12 +142,10 @@ namespace ControleDeLeiloes.Controllers
         {
             if (Progresso.EtapaAnuncio == 0 && Progresso.EtapaPagina == 0)
             {
-                int qntPaginas = 10;
-
                 //barra de progresso
-                string[] texto = new string[qntPaginas];
+                //string[] texto = new string[qntPaginas];
                 Progresso.QuantidadePaginas = qntPaginas;
-                Progresso.EtapaPagina = 0;
+                Progresso.EtapaPagina = 1;
                 Progresso.Estagio = "Páginas";
                 Progresso.Gravado = false;
 
@@ -156,47 +159,37 @@ namespace ControleDeLeiloes.Controllers
                 int qntAnuncios = 0;
                 var anuncios = new List<Anuncio>();
                 var anuncioUnico = new Anuncio();
+                List<String> listPaginas = new List<string>();
 
-                string link = "https://df.olx.com.br/para-a-sua-casa?sf=1";
-                var requisicaoWeb = WebRequest.CreateHttp(link);
                 WebResponse resposta;
                 WebResponse resposta2;
                 Stream streamDados;
                 StreamReader reader;
                 object objResponse;
 
+                //criar lista de páginas
+                string link = "https://df.olx.com.br/para-a-sua-casa?sf=1";
+                listPaginas.Add(link);
+                for (int i = 2; i <= qntPaginas; i++)
+                {
+                    link = "https://df.olx.com.br/para-a-sua-casa?o=" + i + "&sf=1";
+                    listPaginas.Add(link);
+                }
 
                 //baixar páginas
-
-                for (int i = 0; i < qntPaginas; i++)
+                await getPaginas(listPaginas);
+                //Total de anuncios
+                foreach (String item in texto)
                 {
-                    posicao = 0;
-                    posicao1 = 0;
-                    posicaoInicial = 0;
-                    tamanho = 0;
                     x = 0;
-                    Progresso.EtapaPagina++;
-
-                    if (i > 0)
+                    while (item.IndexOf("data-lurker_list_id", x) > -1)
                     {
-                        link = "https://df.olx.com.br/para-a-sua-casa?o=" + i + 1 + "&sf=1";
-                        requisicaoWeb = WebRequest.CreateHttp(link);
-                    }
-
-                    requisicaoWeb.Method = "GET";
-                    requisicaoWeb.UserAgent = "RequisicaoWebDemo";
-
-                    resposta = await requisicaoWeb.GetResponseAsync();
-                    streamDados = resposta.GetResponseStream();
-                    reader = new StreamReader(streamDados);
-                    objResponse = reader.ReadToEnd();
-
-                    texto[i] = objResponse.ToString();
-
-                    while (texto[i].IndexOf("data-lurker_list_id", x) > -1)
-                    {
-                        x = texto[i].IndexOf("data-lurker_list_id", x) + 1;
-                        qntAnuncios++;
+                        x = item.IndexOf("data-lurker_list_id", x);
+                        if (x > -1)
+                        {
+                            x++;
+                            qntAnuncios++;
+                        }
                     }
                 }
 
@@ -214,26 +207,26 @@ namespace ControleDeLeiloes.Controllers
 
                 try
                 {
-                    for (int i = 0; i < qntPaginas; i++)
+                    foreach (String item in texto)
                     {
                         posicaoInicial = 0;
                         posicao = 0;
                         posAnt = 0;
                         posicao1 = 0;
-                        
-                        while (texto[i].IndexOf("data-lurker_list_id", posicaoInicial) > -1 && qntAnuncios > 0)
+
+                        while (item.IndexOf("data-lurker_list_id", posicaoInicial) > -1 && qntAnuncios > 0)
                         {
-                            posicaoInicial = texto[i].IndexOf("data-lurker_list_id", posicaoInicial) + 10;
+                            posicaoInicial = item.IndexOf("data-lurker_list_id", posicaoInicial) + 10;
 
                             qntAnuncios--;
 
                             //IdAnuncio
                             posAnt = posicao;
-                            posicao = texto[i].IndexOf("data-lurker_list_id", posicao) + 21;
-                            tamanho = texto[i].IndexOf("data-lurker", posicao) - 2 - posicao;
+                            posicao = item.IndexOf("data-lurker_list_id", posicao) + 21;
+                            tamanho = item.IndexOf("data-lurker", posicao) - 2 - posicao;
                             if (tamanho > 0)
                             {
-                                anuncioUnico.IdAnuncio = texto[i].Substring(posicao, tamanho);
+                                anuncioUnico.IdAnuncio = item.Substring(posicao, tamanho);
                             }
 
                             //verifica se o anuncio já está cadastrado
@@ -244,12 +237,12 @@ namespace ControleDeLeiloes.Controllers
                             else
                             {
                                 //Link
-                                posicao = texto[i].IndexOf("href=\"https://df.olx.com.br", posicao) + 6;
-                                tamanho = texto[i].IndexOf(" target=", posicao) - 1 - posicao;
+                                posicao = item.IndexOf("href=\"https://df.olx.com.br", posicao) + 6;
+                                tamanho = item.IndexOf(" target=", posicao) - 1 - posicao;
                                 if (tamanho > 0)
                                 {
                                     Uri uriResult;
-                                    string uriTmp = texto[i].Substring(posicao, tamanho);
+                                    string uriTmp = item.Substring(posicao, tamanho);
                                     bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
                                         && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
                                     if (result)
@@ -263,7 +256,7 @@ namespace ControleDeLeiloes.Controllers
                                 if (anuncioUnico.Link.Length < 2083)
                                 {
 
-                                    requisicaoWeb = WebRequest.CreateHttp(anuncioUnico.Link);
+                                    var requisicaoWeb = WebRequest.CreateHttp(anuncioUnico.Link);
                                     using (resposta2 = await requisicaoWeb.GetResponseAsync())
                                     {
                                         //resposta2 = requisicaoWeb.GetResponse();
@@ -324,7 +317,7 @@ namespace ControleDeLeiloes.Controllers
 
                                         //    tamanho = texto3.IndexOf("/span", posicao2) - 1 - posicao2;
 
-                                        //    if (int.Parse(texto[i].Substring(posicao2, tamanho)) > 20)
+                                        //    if (int.Parse(item.Substring(posicao2, tamanho)) > 20)
                                         //    {
                                         //        //cadastra vendedorProibido
                                         //        var vendedorProibido = new VendedorProibido();
@@ -493,6 +486,7 @@ namespace ControleDeLeiloes.Controllers
                                 }
                             }
                         }
+
                     }
                     Progresso.Gravado = true;
                     Progresso.EtapaAnuncio = 0;
@@ -508,6 +502,47 @@ namespace ControleDeLeiloes.Controllers
                 return true;
             }
             return true;
+        }
+
+        private async Task getPaginas(List<string> listPaginas)
+        {
+            IEnumerable<Task<int>> downloadTasksQuery =
+               from url in listPaginas
+               select ProcessUrlAsync(url, s_WebRequest);
+
+            List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
+
+            while (downloadTasks.Any())
+            {
+                Task<int> finishedTask = await Task.WhenAny(downloadTasks);
+                downloadTasks.Remove(finishedTask);
+                if (Progresso.EtapaPagina < qntPaginas )
+                {
+                    Progresso.EtapaPagina++;
+                }
+            }
+        }
+
+        private async Task<int> ProcessUrlAsync(string url, WebRequest s_webRequest)
+        {
+            try
+            {
+                s_webRequest = WebRequest.CreateHttp(url);
+                s_webRequest.Method = "GET";
+                //s_webRequest.UserAgent = "RequisicaoWebDemo";
+
+                var resposta = await s_webRequest.GetResponseAsync();
+                var streamDados = resposta.GetResponseStream();
+                var reader = new StreamReader(streamDados);
+                var objResponse = reader.ReadToEnd();
+
+                texto.Add(objResponse.ToString());
+            }
+            catch (WebException e)
+            {
+                Progresso.MensagemErro = e.Message + " //StackTrace// " + e.StackTrace;
+            }
+            return 0;
         }
 
 
