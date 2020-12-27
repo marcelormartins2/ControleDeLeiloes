@@ -32,11 +32,11 @@ namespace ControleDeLeiloes.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync()
-        {
-        
-            return Page();
-        }
+        //public async Task<IActionResult> OnGetAsync()
+        //{
+       
+        //    return Page();
+        //}
 
         public async Task<IActionResult> OnPostAsync()
         {

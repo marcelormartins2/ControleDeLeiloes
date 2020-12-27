@@ -50,6 +50,10 @@
             <div class="form-group">
                 <label id="estagioBarra4" class="col-lg-2 control-label"></label>
             </div>
+            <div class="form-group">
+                <label>@ViewBag.AgoraTime</label>
+            </div>
+            
         </form>
     </div>
 </div>
@@ -80,6 +84,19 @@
                 clearInterval(timer);
             }
 
+            document.getElementById("estagioBarra").innerHTML = "<label></label>";
+            $('#divProgressbar').attr("class", "");
+            $('#progressbar').attr("style", "");
+            $("#progressbar").html("");
+
+            document.getElementById("estagioBarra2").innerHTML = "<label></label>";
+            $('#divProgressbar2').attr("class", "");
+            $('#progressbar2').attr("style", "");
+            $("#progressbar2").html("");
+            document.getElementById("estagioBarra3").innerHTML = "<label></label>";
+            document.getElementById("msgErro").innerHTML = "<label></label>";
+
+
             timer = setInterval(function () {
                 GetProgresso(timer);
             }, 500);
@@ -99,6 +116,8 @@
                 $('#progressbar2').attr("style", "");
                 $("#progressbar2").html("");
                 document.getElementById("estagioBarra3").innerHTML = "<label></label>";
+                document.getElementById("msgErro").innerHTML = "<label></label>";
+
 
                 $.ajax({
                     url: "/Anuncios/AtualizarAnuncios",
@@ -123,7 +142,7 @@
                         document.getElementById("estagioBarra4").innerHTML = "<label>" + contador +
                             "/EP" + progresso.etapaPagina + "/" + progresso.quantidadePaginas +
                             "/EA" + progresso.etapaAnuncio + "/" + progresso.quantidadeAnuncios + "</label>";
-                        if (progresso.mensagemErro != null) {
+                        if (progresso.mensagemErro != null && progresso.mensagemErro != "") {
                             document.getElementById("msgErro").innerHTML = "<label>Menssagen de erro:" + progresso.mensagemErro;
                         }
                         if (progresso.etapaPagina > 0) {
@@ -179,26 +198,28 @@
                         //};
                         //}
                         //else {
-                        if (progresso.gravado) {
-                            if (progresso.quantidadePaginas > 0) {
-                                document.getElementById("estagioBarra").innerHTML = "<label>Páginas</label>";
-                                $('#divProgressbar').attr("class", "progress progress-striped");
-                                $('#progressbar').attr("style", "width: 100%;");
-                                $("#progressbar").html(progresso.quantidadePaginas + "/" + progresso.quantidadePaginas);
-                            }
 
-                            if (progresso.quantidadeAnuncios > 0) {
-                                document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios</label>";
-                                $('#divProgressbar2').attr("class", "progress progress-striped");
-                                $('#progressbar2').attr("style", "width: 100%;");
-                                $("#progressbar2").html(progresso.quantidadeAnuncios + "/" + progresso.quantidadeAnuncios);
-                                document.getElementById("estagioBarra3").innerHTML = "<label>Atualização concluída</label>";
-                            } else {
-                                //if (progresso.etapaAnuncio == 0 && document.getElementById("estagioBarra2").innerHTML == "<label>Anuncios</label>") {
-                                document.getElementById("estagioBarra3").innerHTML = "<label>Não há novos anuncios</label>";
-                                //}
-                            }
-                        }
+
+                        //if (progresso.gravado) {
+                        //    if (progresso.quantidadePaginas > 0) {
+                        //        document.getElementById("estagioBarra").innerHTML = "<label>Páginas</label>";
+                        //        $('#divProgressbar').attr("class", "progress progress-striped");
+                        //        $('#progressbar').attr("style", "width: 100%;");
+                        //        $("#progressbar").html(progresso.quantidadePaginas + "/" + progresso.quantidadePaginas);
+                        //    }
+
+                        //    if (progresso.quantidadeAnuncios > 0) {
+                        //        document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios</label>";
+                        //        $('#divProgressbar2').attr("class", "progress progress-striped");
+                        //        $('#progressbar2').attr("style", "width: 100%;");
+                        //        $("#progressbar2").html(progresso.quantidadeAnuncios + "/" + progresso.quantidadeAnuncios);
+                        //        document.getElementById("estagioBarra3").innerHTML = "<label>Atualização concluída</label>";
+                        //    } else {
+                        //        //if (progresso.etapaAnuncio == 0 && document.getElementById("estagioBarra2").innerHTML == "<label>Anuncios</label>") {
+                        //        document.getElementById("estagioBarra3").innerHTML = "<label>Não há novos anuncios</label>";
+                        //        //}
+                        //    }
+                        //}
                         if (progresso.etapaAnuncio == 0 && progresso.etapaPagina == 0) {
                             clearInterval(timer);
                         }
