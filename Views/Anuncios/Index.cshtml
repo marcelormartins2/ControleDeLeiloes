@@ -21,6 +21,7 @@
                             {
                                 <a asp-controller="Anuncios" asp-action="Index" asp-route-verNotView=true><span title="Visualizar todos">Visualizar todos</span> </a>
                             }
+                        <p>Valor: min @Html.TextBox("min") max @Html.TextBox("max")</p>
                         </div>
                         <div class="panel-body">
                             <table id="ListaAnuncios" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -107,16 +108,41 @@
     <script src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
 
     <script type="text/javascript">
-        $j2(document).ready(function () {
-            $('#ListaAnuncios').DataTable({
-                "language": {
-                    "lengthMenu": "Mostrando _MENU_ registros por página",
-                    "zeroRecords": "Nada encontrado",
-                    "info": "Mostrando página _PAGE_ de _PAGES_",
-                    "infoEmpty": "Nenhum registro disponível",
-                    "infoFiltered": "(filtrado de _MAX_ registros no total)"
+
+        $.fn.dataTable.ext.search.push(
+            function (settings, data, dataIndex) {
+                var min = parseInt($('#min').val(), 10);
+                var max = parseInt($('#max').val(), 10);
+                var coluna = parseFloat(data[3]) || 0; // use data for the coluna column
+
+                if ((isNaN(min) && isNaN(max)) ||
+                    (isNaN(min) && coluna <= max) ||
+                    (min <= coluna && isNaN(max)) ||
+                    (min <= coluna && coluna <= max)) {
+                    return true;
                 }
+                return false;
+            }
+        );
+
+       $j2(document).ready(function () {
+           $('#ListaAnuncios').DataTable({
+               "language": {
+                   "lengthMenu": "Mostrando _MENU_ registros por página",
+                   "zeroRecords": "Nada encontrado",
+                   "info": "Mostrando página _PAGE_ de _PAGES_",
+                   "infoEmpty": "Nenhum registro disponível",
+                   "infoFiltered": "(filtrado de _MAX_ registros no total)"
+               }
+           });
+
+           var table = $('#ListaAnuncios').DataTable();
+
+            // Event listener to the two range filtering inputs to redraw on input
+            $('#min, #max').keyup(function () {
+                table.draw();
             });
+
         });
 
        function UpdateNotView(elem) {

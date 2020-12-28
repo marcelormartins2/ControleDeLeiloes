@@ -26,16 +26,13 @@ namespace ControleDeLeiloes.Controllers
         static List<String> conteudoPaginas = new List<string>();
         static List<String> listaLinksAnuncios = new List<string>();
         static List<String> conteudoAnuncios = new List<string>();
-        static readonly int qntPaginas = 20;
+        static List<Anuncio> dadosAnuncios = new List<Anuncio>();
+        static readonly int qntPaginas = 100;
         static int lastId = 0;
         //ProgressBar
         private static Progresso Progresso = new Progresso { RegistrosBDAnalisados = -1 };
         public JsonResult GetProgresso()
         {
-            if (Progresso.QuantidadeAnuncios>0)
-            {
-                Progresso.QuantidadeAnuncios = Progresso.QuantidadeAnuncios;
-            }
             return Json(Progresso);
         }
         //reseta a clasee progresso
@@ -145,9 +142,14 @@ namespace ControleDeLeiloes.Controllers
             return View();
         }
         //Atualizar anuncios
-        public async Task<bool> AtualizarAnuncios()
+        public async Task<bool> AtualizarAnuncios(String urlOlx)
         {
-            if (Progresso.EtapaAnuncio == 0 && Progresso.EtapaPagina == 0)
+            Uri uriResult;
+            string uriTmp = urlOlx;
+            bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+            if (result && Progresso.EtapaAnuncio == 0 && Progresso.EtapaPagina == 0)
             {
                 //barra de progresso
                 //string[] texto = new string[qntPaginas];
@@ -167,13 +169,13 @@ namespace ControleDeLeiloes.Controllers
                 var anuncios = new List<Anuncio>();
                 var anuncioUnico = new Anuncio();
                 List<String> listPaginas = new List<string>();
-                               
+
                 //criar lista de páginas
-                string link = "https://df.olx.com.br/para-a-sua-casa?sf=1";
+                string link = urlOlx; // "https://df.olx.com.br/para-a-sua-casa?sf=1";
                 listPaginas.Add(link);
                 for (int i = 2; i <= qntPaginas; i++)
                 {
-                    link = "https://df.olx.com.br/para-a-sua-casa?o=" + i + "&sf=1";
+                    link = urlOlx.Substring(0,urlOlx.IndexOf("?")+1) + "o=" + i + "&" + urlOlx.Substring(urlOlx.IndexOf("?")+1, urlOlx.Length - (urlOlx.IndexOf("?") + 1));
                     listPaginas.Add(link);
                 }
 
@@ -209,13 +211,12 @@ namespace ControleDeLeiloes.Controllers
                         else
                         {
                             //Link
-                            posicao = item.IndexOf("href=\"https://df.olx.com.br", posicao) + 6;
+                            posicao = item.IndexOf("olx.com.br", posicao)-11;
                             tamanho = item.IndexOf(" target=", posicao) - 1 - posicao;
                             if (tamanho > 0)
                             {
-                                Uri uriResult;
-                                string uriTmp = item.Substring(posicao, tamanho);
-                                bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
+                                uriTmp = item.Substring(posicao, tamanho);
+                                result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
                                     && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
                                 if (result)
                                 {
@@ -236,6 +237,7 @@ namespace ControleDeLeiloes.Controllers
                 Progresso.QuantidadeAnuncios = qntAnuncios;
                 Progresso.EtapaAnuncio = 0;
                 Progresso.Estagio = "Anuncios";
+                dadosAnuncios = new List<Anuncio>();
 
                 //Busca o Id do último último anuncio cadastrado no banco de dados
                 Anuncio novoAnuncio = await _context.Anuncio.OrderByDescending(o => o.Id).FirstOrDefaultAsync();
@@ -244,11 +246,17 @@ namespace ControleDeLeiloes.Controllers
                 //baixar anuncios
                 await getAnuncios(listaLinksAnuncios);
 
-                //Extrair e gravar dados dos anuncios
-                foreach (String item in conteudoAnuncios)
+                ////Extrair e gravar dados dos anuncios
+                //await getDadosAnuncios(conteudoAnuncios);
+
+                //savar anuncios no banco de dados
+                foreach (Anuncio item in dadosAnuncios)
                 {
-                   await ExtrairDadosAnuncio(item);
+                    _context.Add(item);
+                    _context.SaveChanges();
                 }
+
+                Thread.Sleep(3000);
                 Progresso.Gravado = true;
                 Progresso.EtapaAnuncio = 0;
                 Progresso.EtapaPagina = 0;
@@ -392,6 +400,9 @@ namespace ControleDeLeiloes.Controllers
         //processUrl das páginas multi task
         private async Task<int> ProcessUrlAsync(string url, WebRequest s_webRequest)
         {
+            //atraso para não dar erro 503 de limete de solicitações no site
+            Thread.Sleep(50);
+
             try
             {
                 s_webRequest = WebRequest.CreateHttp(url);
@@ -447,49 +458,76 @@ namespace ControleDeLeiloes.Controllers
                     var reader = new StreamReader(streamDados);
                     var objResponse = reader.ReadToEnd();
 
-                    conteudoAnuncios.Add(objResponse.ToString());
+                    //conteudoAnuncios.Add(objResponse.ToString());
+                    Progresso.EtapaAnuncio++;
+                    await ProcessDadosAnunciosAsync(objResponse.ToString());
                 }
             }
             catch (Exception e)
             {
-                Progresso.MensagemErro = e.Message + " / " + e.StackTrace;
+                if (e.Message.ToString().IndexOf("error:(404)") > -1)
+                {
+                    Progresso.MensagemErro = url;
+                }
+                else
+                {
+                    Progresso.MensagemErro = e.Message + " / " + e.StackTrace;
+                }
                 throw;
             }
 
             return 0;
         }
 
-        private async Task ExtrairDadosAnuncio(String anuncio)
+        private async Task getDadosAnuncios(List<string> anuncios)
         {
-            var posicao1 = 0;
-            var tamanho = 0;
-            Anuncio anuncioUnico = new Anuncio();
+            IEnumerable<Task<int>> downloadTasksQuery =
+               from anuncio in anuncios
+               select ProcessDadosAnunciosAsync(anuncio);
 
-            //link
-            posicao1 = anuncio.IndexOf("canonical") + 11;
-            tamanho = anuncio.IndexOf("link ", posicao1) - 4 - posicao1;
-            if (tamanho > 0)
+            List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
+
+            while (downloadTasks.Any())
             {
-                anuncioUnico.Link = anuncio.Substring(posicao1, tamanho);
+                Task<int> finishedTask = await Task.WhenAny(downloadTasks);
+                downloadTasks.Remove(finishedTask);
             }
+        }
 
-            //idAnuncio
-            posicao1 = anuncio.IndexOf("adpage/?id=") + 11;
-            tamanho = anuncio.IndexOf("meta", posicao1) - 4 - posicao1;
-            if (tamanho > 0)
+        //processUrl  multi task
+        private async Task<int> ProcessDadosAnunciosAsync(string anuncio)
+        {
+            try
             {
-                anuncioUnico.IdAnuncio = anuncio.Substring(posicao1, tamanho);
-            }
+                var posicao1 = 0;
+                var tamanho = 0;
+                Anuncio anuncioUnico = new Anuncio();
 
-            //vendedor
-            posicao1 = anuncio.IndexOf("sellerName") + 13;
-            tamanho = anuncio.IndexOf(",", posicao1) - 1 - posicao1;
-            if (tamanho > 0)
-            {
-                anuncioUnico.Vendedor = anuncio.Substring(posicao1, tamanho);
-            }
+                //link
+                posicao1 = anuncio.IndexOf("canonical") + 17;
+                tamanho = anuncio.IndexOf("link ", posicao1) - 4 - posicao1;
+                if (tamanho > 0)
+                {
+                    anuncioUnico.Link = anuncio.Substring(posicao1, tamanho);
+                }
 
-            var excludentes = new List<string>
+                //idAnuncio
+                posicao1 = anuncio.IndexOf("adpage/?id=") + 11;
+                tamanho = anuncio.IndexOf("meta", posicao1) - 4 - posicao1;
+                if (tamanho > 0)
+                {
+                    anuncioUnico.IdAnuncio = anuncio.Substring(posicao1, tamanho);
+                }
+
+                //vendedor
+                posicao1 = anuncio.IndexOf("sellerName") + 13;
+                tamanho = anuncio.IndexOf(",", posicao1) - 1 - posicao1;
+                if (tamanho > 0)
+                {
+                    anuncioUnico.Vendedor = anuncio.Substring(posicao1, tamanho);
+                }
+
+                var excludentes = new List<string>
                                         {
                                             "anúncio profissional",
                                             "a partir de ",
@@ -504,132 +542,140 @@ namespace ControleDeLeiloes.Controllers
                                             "da fabrica",
                                             "da fábrica",
                                         };
-            int count = 0;
-            Boolean vendedorProibido = false;
-            foreach (string element in excludentes)
-            {
-                count++;
-                if (anuncio.IndexOf(element, StringComparison.CurrentCultureIgnoreCase) > -1)
-                {
-                    vendedorProibido = true;
-                }
-            }
-            if (vendedorProibido)
-            {
-                //decrementa quantidade na barra de progresso
-                Progresso.QuantidadeAnuncios--;
-            }
-            else
-            {
-                //imagens
-                posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC");
-                count = 0;
-                while (posicao1 > -1 && count < 3)
+                int count = 0;
+                Boolean vendedorProibido = false;
+                foreach (string element in excludentes)
                 {
                     count++;
-                    posicao1 += 27;
-                    tamanho = anuncio.IndexOf("alt=", posicao1) - 2 - posicao1;
-                    if (tamanho > 0)
+                    if (anuncio.IndexOf(element, StringComparison.CurrentCultureIgnoreCase) > -1)
                     {
-                        Uri uriResult;
-                        string uriTmp = anuncio.Substring(posicao1, tamanho);
-                        bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
-                            && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-                        if (result)
-                        {
-                            switch (count)
-                            {
-                                case 1:
-                                    anuncioUnico.Img1 = uriTmp;
-                                    break;
-                                case 2:
-                                    anuncioUnico.Img2 = uriTmp;
-                                    break;
-                                case 3:
-                                    anuncioUnico.Img3 = uriTmp;
-                                    break;
-                            }
-                        }
-                    }
-                    posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC", posicao1);
-                }
-                //Descricao
-                posicao1 = anuncio.IndexOf("sc-1sj3nln-1 eOSweo sc-ifAKCX cmFKIN");
-                posicao1 = anuncio.IndexOf("weight", posicao1) + 13;
-                tamanho = anuncio.IndexOf("/span", posicao1) - 1 - posicao1;
-                if (tamanho > 0)
-                {
-                    anuncioUnico.Descricao = anuncio.Substring(posicao1, tamanho);
-                }
-                //Titulo
-                posicao1 = anuncio.IndexOf("og:title");
-                if (posicao1 > 0)
-                {
-                    posicao1 += 19;
-                    tamanho = anuncio.IndexOf("/><meta", posicao1) - 1 - posicao1;
-
-                    if (tamanho > 0)
-                    {
-                        anuncioUnico.Titulo = anuncio.Substring(posicao1, tamanho);
+                        vendedorProibido = true;
                     }
                 }
-                //Data Publicação
-                posicao1 = anuncio.IndexOf("Publicado em <") + 21;
-                tamanho = 5;
-                anuncioUnico.DtPublicacao = DateTime.ParseExact(anuncio.Substring(posicao1, tamanho), "dd/MM", CultureInfo.InvariantCulture);
-                //preço
-                posicao1 = anuncio.IndexOf("price") + 8;
-                tamanho = anuncio.IndexOf(",", posicao1) - 1 - posicao1;
-                if (tamanho > 0)
+                if (vendedorProibido)
                 {
-                    anuncioUnico.VlAnunciado = Int32.Parse(anuncio.Substring(posicao1, tamanho));
-                }
-                //bairro
-                posicao1 = anuncio.IndexOf("Bairro<");
-                if (posicao1 > 0)
-                {
-                    posicao1 = anuncio.IndexOf("<dd ", posicao1);
-                    posicao1 = anuncio.IndexOf(">", posicao1) + 1;
-                    tamanho = anuncio.IndexOf("</dd>", posicao1) - posicao1;
-                    if (tamanho > 0)
-                    {
-                        anuncioUnico.Bairro = anuncio.Substring(posicao1, tamanho);
-                    }
+                    //decrementa quantidade na barra de progresso
+                    Progresso.QuantidadeAnuncios --;
+                    Progresso.EtapaAnuncio--;
                 }
                 else
                 {
-                    posicao1 = anuncio.IndexOf("Município<");
+                    //imagens
+                    posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC");
+                    count = 0;
+                    while (posicao1 > -1 && count < 3)
+                    {
+                        count++;
+                        posicao1 += 27;
+                        tamanho = anuncio.IndexOf("alt=", posicao1) - 2 - posicao1;
+                        if (tamanho > 0)
+                        {
+                            Uri uriResult;
+                            string uriTmp = anuncio.Substring(posicao1, tamanho);
+                            bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
+                                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+                            if (result)
+                            {
+                                switch (count)
+                                {
+                                    case 1:
+                                        anuncioUnico.Img1 = uriTmp;
+                                        break;
+                                    case 2:
+                                        anuncioUnico.Img2 = uriTmp;
+                                        break;
+                                    case 3:
+                                        anuncioUnico.Img3 = uriTmp;
+                                        break;
+                                }
+                            }
+                        }
+                        posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC", posicao1);
+                    }
+                    //Descricao
+                    posicao1 = anuncio.IndexOf("sc-1sj3nln-1 eOSweo sc-ifAKCX cmFKIN");
+                    posicao1 = anuncio.IndexOf("weight", posicao1) + 13;
+                    tamanho = anuncio.IndexOf("/span", posicao1) - 1 - posicao1;
+                    if (tamanho > 0)
+                    {
+                        anuncioUnico.Descricao = anuncio.Substring(posicao1, tamanho);
+                    }
+                    //Titulo
+                    posicao1 = anuncio.IndexOf("og:title");
+                    if (posicao1 > 0)
+                    {
+                        posicao1 += 19;
+                        tamanho = anuncio.IndexOf("/><meta", posicao1) - 1 - posicao1;
+
+                        if (tamanho > 0)
+                        {
+                            anuncioUnico.Titulo = anuncio.Substring(posicao1, tamanho);
+                        }
+                    }
+                    //Data Publicação
+                    posicao1 = anuncio.IndexOf("Publicado em <") + 21;
+                    tamanho = 5;
+                    anuncioUnico.DtPublicacao = DateTime.ParseExact(anuncio.Substring(posicao1, tamanho), "dd/MM", CultureInfo.InvariantCulture);
+                    //preço
+                    posicao1 = anuncio.IndexOf("price") + 8;
+                    tamanho = anuncio.IndexOf(",", posicao1) - 1 - posicao1;
+                    if (tamanho > 0)
+                    {
+                        anuncioUnico.VlAnunciado = Int32.Parse(anuncio.Substring(posicao1, tamanho));
+                    }
+                    //bairro
+                    posicao1 = anuncio.IndexOf("Bairro<");
                     if (posicao1 > 0)
                     {
                         posicao1 = anuncio.IndexOf("<dd ", posicao1);
                         posicao1 = anuncio.IndexOf(">", posicao1) + 1;
                         tamanho = anuncio.IndexOf("</dd>", posicao1) - posicao1;
-
                         if (tamanho > 0)
                         {
                             anuncioUnico.Bairro = anuncio.Substring(posicao1, tamanho);
                         }
                     }
-                }
-                //telefone
-                posicao1 = anuncio.IndexOf(";phone") + 38;
-                tamanho = anuncio.IndexOf("&quot", posicao1) - posicao1;
+                    else
+                    {
+                        posicao1 = anuncio.IndexOf("Município<");
+                        if (posicao1 > 0)
+                        {
+                            posicao1 = anuncio.IndexOf("<dd ", posicao1);
+                            posicao1 = anuncio.IndexOf(">", posicao1) + 1;
+                            tamanho = anuncio.IndexOf("</dd>", posicao1) - posicao1;
 
-                if (tamanho > 0)
-                {
-                    anuncioUnico.Telefone = anuncio.Substring(posicao1, tamanho);
+                            if (tamanho > 0)
+                            {
+                                anuncioUnico.Bairro = anuncio.Substring(posicao1, tamanho);
+                            }
+                        }
+                    }
+                    //telefone
+                    posicao1 = anuncio.IndexOf(";phone") + 38;
+                    tamanho = anuncio.IndexOf("&quot", posicao1) - posicao1;
+
+                    if (tamanho > 0)
+                    {
+                        anuncioUnico.Telefone = anuncio.Substring(posicao1, tamanho);
+                    }
+                    // GRAVAÇÃO DE REGISTRO
+                    if (ModelState.IsValid)
+                    {
+                        anuncioUnico.Id = (lastId > 0) ? lastId + 1 : 1;
+                        lastId++;
+                        dadosAnuncios.Add(anuncioUnico);
+                    }
+                    //Barra de Progresso
+                    //Progresso.EtapaAnuncio++;
                 }
-                // GRAVAÇÃO DE REGISTRO
-                if (ModelState.IsValid)
-                {
-                    anuncioUnico.Id = (lastId > 0) ? lastId + 1 : 1;
-                    _context.Add(anuncioUnico);
-                    await _context.SaveChangesAsync();
-                    lastId++;
-                }
-                //Barra de Progresso
-                Progresso.EtapaAnuncio++;
             }
+            catch (Exception e)
+            {
+                Progresso.MensagemErro = e.Message + " / " + e.StackTrace;
+                throw;
+            }
+
+            return 0;
         }
     }
 }

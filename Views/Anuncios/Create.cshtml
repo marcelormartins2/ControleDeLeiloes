@@ -15,6 +15,7 @@
 
             <div class="form-group">
                 @*<input id="btnAtualizar" type="submit" value="Atualizar Anuncios" class="btn btn-primary mr5 mb10" />*@
+                <p>Link Olx: <input type="text" id="urlOlx" name="urlOlx" size="100%" value="https://df.olx.com.br/para-a-sua-casa?sf=1"></p>
                 <button id="btnAtualizar" type="button" class="btn btn-primary mr5 mb10">Atualizar Anuncios</button>
                 <p><a asp-action="Index">Voltar para lista de anuncios.</a></p>
             </div>
@@ -118,11 +119,17 @@
                 document.getElementById("estagioBarra3").innerHTML = "<label></label>";
                 document.getElementById("msgErro").innerHTML = "<label></label>";
 
-
+                var urlPost = $('#urlOlx').val();
                 $.ajax({
-                    url: "/Anuncios/AtualizarAnuncios",
-                    type: "POST"
+                    type: 'POST',
+                    url: '@Url.Action("AtualizarAnuncios", "Anuncios")',
+                    data: { urlOlx: urlPost },
                 });
+
+                //$.ajax({
+                //    url: "/Anuncios/AtualizarAnuncios",
+                //    type: "POST"
+                //});
 
                 clearInterval(timer);
                 timer = setInterval(function () {
@@ -170,9 +177,9 @@
                         if (progresso.etapaAnuncio > 0) {
                             document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios</label>";
                             $('#divProgressbar2').attr("class", "progress progress-striped");
-                            $('#progressbar2').attr("aria-valuemax", progresso.quantidade);
+                            $('#progressbar2').attr("aria-valuemax", progresso.quantidadeAnuncios);
                             $('#progressbar2').attr("style", "width: " + (progresso.etapaAnuncio / progresso.quantidadeAnuncios) * 100 + "%;");
-                            $("#progressbar2").html(progresso.etapaAnuncio + "/" + progresso.quantidadeAnuncios);
+                            $("#progressbar2").html((Math.round((progresso.etapaAnuncio / progresso.quantidadeAnuncios) * 100)) + "%");
                             if (progresso.quantidadeAnuncios != progresso.etapaAnuncio) {
                                 ultimaAtualizacaoAnuncio = (ultimaAtualizacaoAnuncio != progresso.etapaAnuncio) ? progresso.etapaAnuncio : ultimaAtualizacaoAnuncio;
                             }
