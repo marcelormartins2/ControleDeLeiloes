@@ -14,6 +14,11 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
+                <label asp-for="NotView" class="control-label"></label>
+                <input asp-for="NotView" class="checkbox" />
+                <span asp-validation-for="NotView" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="IdAnuncio" class="control-label"></label>
                 <input asp-for="IdAnuncio" class="form-control" />
                 <span asp-validation-for="IdAnuncio" class="text-danger"></span>

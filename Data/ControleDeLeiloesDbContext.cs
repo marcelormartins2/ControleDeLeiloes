@@ -19,6 +19,8 @@ namespace ControleDeLeiloes.Data
         public virtual DbSet<Leiloeiro> Leiloeiro { get; set; }
         public virtual DbSet<Anuncio> Anuncio { get; set; }
         public virtual DbSet<VendedorProibido> VendedorProibido { get; set; }
+        public virtual DbSet<CategoriaAnuncio> CategoriaAnuncio { get; set; }
+        public virtual DbSet<SubcategoriaAnuncio> SubcategoriaAnuncio { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

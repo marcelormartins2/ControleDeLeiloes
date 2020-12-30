@@ -3,14 +3,16 @@ using System;
 using ControleDeLeiloes.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ControleDeLeiloes.Migrations
 {
     [DbContext(typeof(ControleDeLeiloesDbContext))]
-    partial class ControleDeLeiloesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201230143356_olxPay")]
+    partial class olxPay
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,8 +28,8 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<string>("Bairro")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("CategoriaAnuncioId")
-                        .HasColumnType("int");
+                    b.Property<string>("Categoria")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Descricao")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -65,8 +67,8 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<bool>("OlxPay")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("SubcategoriaAnuncioId")
-                        .HasColumnType("int");
+                    b.Property<string>("Subcategoria")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Telefone")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
@@ -82,25 +84,7 @@ namespace ControleDeLeiloes.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoriaAnuncioId");
-
-                    b.HasIndex("SubcategoriaAnuncioId");
-
                     b.ToTable("Anuncio");
-                });
-
-            modelBuilder.Entity("ControleDeLeiloes.Models.CategoriaAnuncio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nome")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CategoriaAnuncio");
                 });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Leilao", b =>
@@ -244,20 +228,6 @@ namespace ControleDeLeiloes.Migrations
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("Produto");
-                });
-
-            modelBuilder.Entity("ControleDeLeiloes.Models.SubcategoriaAnuncio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nome")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SubcategoriaAnuncio");
                 });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Usuario", b =>
@@ -482,21 +452,6 @@ namespace ControleDeLeiloes.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
-                });
-
-            modelBuilder.Entity("ControleDeLeiloes.Models.Anuncio", b =>
-                {
-                    b.HasOne("ControleDeLeiloes.Models.CategoriaAnuncio", "CategoriaAnuncio")
-                        .WithMany()
-                        .HasForeignKey("CategoriaAnuncioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ControleDeLeiloes.Models.SubcategoriaAnuncio", "SubcategoriaAnuncio")
-                        .WithMany()
-                        .HasForeignKey("SubcategoriaAnuncioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Leilao", b =>

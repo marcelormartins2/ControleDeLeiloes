@@ -21,7 +21,8 @@
                             {
                                 <a asp-controller="Anuncios" asp-action="Index" asp-route-verNotView=true><span title="Visualizar todos">Visualizar todos</span> </a>
                             }
-                        <p>Valor: min @Html.TextBox("min") max @Html.TextBox("max")</p>
+                            <p>Categoria: @ViewBag.Categoria SubCategoria: @ViewBag.SubCategoria @Html.CheckBox("OlxPay") OlxPay @Html.CheckBox("OlxDelivery") OlxEntrega</p>
+                            <p>Valor: min @Html.TextBox("min") max @Html.TextBox("max")</p>
                         </div>
                         <div class="panel-body">
                             <table id="ListaAnuncios" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -50,41 +51,41 @@
                                 <tbody>
                                     @foreach (var item in Model)
                                     {
-                                    <tr id='@item.Id'>
-                                        <td>
-                                            <img src="@Url.Content(item.Img1)" alt="Image" style="height:200px;width:200px;" />
-                                        </td>
-                                        <td>
-                                            <img src="@Url.Content(item.Img2)" alt="Image" style="height:200px;width:200px;" />
-                                        </td>
-                                        <td>
-                                            <img src="@Url.Content(item.Img3)" alt="Image" style="height:200px;width:200px;" />
-                                        </td>
-                                        <td>
-                                            @Html.DisplayFor(modelItem => item.VlAnunciado)
-                                        </td>
-                                        <td>
-                                            @*<a href='@item.Link' target="_blank">*@
-                                            <a asp-action="Details" asp-route-id='@item.Id'>
-                                                @Html.DisplayFor(modelItem => item.Titulo)
-                                            </a>
-                                        </td>
-                                        <td>
-                                            @Html.DisplayFor(modelItem => item.DtPublicacao)
-                                        </td>
-                                        <td>
-                                            @Html.CheckBoxFor(modelItem => item.NotView, new
-                                       {
-                                           onclick = "UpdateNotView(this)",
-                                           data_anuncioid = item.Id
-                                       })
-                                        </td>
-                                        @*<td class="text-right">
-            <a asp-controller="Anuncios" asp-action="NotView" asp-route-id="@item.Id"><span class="che" title="Editar Paciente"></span> </a>
-            <a asp-controller="Paciente" asp-action="Details" asp-route-id="@item.Id"><span class="fa fa-search fa-2x" title="Detalhes Paciente"></span> </a>
-            <a asp-controller="Paciente" asp-action="Delete" asp-route-id="@item.Id"><span class="fa fa-trash fa-2x" title="Excluir Paciente"></span> </a>
-        </td>*@
-                                    </tr>
+                                        <tr id='@item.Id'>
+                                            <td>
+                                                <img src="@Url.Content(item.Img1)" alt="Image" style="height:200px;width:200px;" />
+                                            </td>
+                                            <td>
+                                                <img src="@Url.Content(item.Img2)" alt="Image" style="height:200px;width:200px;" />
+                                            </td>
+                                            <td>
+                                                <img src="@Url.Content(item.Img3)" alt="Image" style="height:200px;width:200px;" />
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.VlAnunciado)
+                                            </td>
+                                            <td>
+                                                @*<a href='@item.Link' target="_blank">*@
+                                                <a asp-action="Details" asp-route-id='@item.Id'>
+                                                    @Html.DisplayFor(modelItem => item.Titulo)
+                                                </a>
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.DtPublicacao)
+                                            </td>
+                                            <td>
+                                                @Html.CheckBoxFor(modelItem => item.NotView, new
+                                           {
+                                               onclick = "UpdateNotView(this)",
+                                               data_anuncioid = item.Id
+                                           })
+                                            </td>
+                                            @*<td class="text-right">
+                                                    <a asp-controller="Anuncios" asp-action="NotView" asp-route-id="@item.Id"><span class="che" title="Editar Paciente"></span> </a>
+                                                    <a asp-controller="Paciente" asp-action="Details" asp-route-id="@item.Id"><span class="fa fa-search fa-2x" title="Detalhes Paciente"></span> </a>
+                                                    <a asp-controller="Paciente" asp-action="Delete" asp-route-id="@item.Id"><span class="fa fa-trash fa-2x" title="Excluir Paciente"></span> </a>
+                                                </td>*@
+                                        </tr>
                                     }
                                 </tbody>
                             </table>
