@@ -32,7 +32,7 @@ namespace ControleDeLeiloes.Controllers
         static List<SubcategoriaAnuncio> subcategoriaAnuncios = new List<SubcategoriaAnuncio>();
         static List<CategoriaAnuncio> novasCategoriaAnuncios = new List<CategoriaAnuncio>();
         static List<SubcategoriaAnuncio> novasSubcategoriaAnuncios = new List<SubcategoriaAnuncio>();
-        static readonly int qntPaginas = 100;
+        static readonly int qntPaginas = 5;
         static int lastId = 0;
         static int lastCategoriaAnuncioId = 0;
         static int lastSubcategoriaAnuncioId = 0;
@@ -49,55 +49,95 @@ namespace ControleDeLeiloes.Controllers
             return Json(Progresso);
         }
         // GET: Anuncios
-        public async Task<IActionResult> Index(bool verNotView, int? categoria, int? subcategoria, bool olxPay, bool olxDelivery)
+        public async Task<IActionResult> Index(bool verNotView, int? categoriaId, int? subcategoriaId, bool olxPay=true, bool olxDelivery=true)
         {
-            //string subcategoria, bool olxPay, bool olxDelivery
-            if ((categoria == null || categoria == 0) && (subcategoria == null || subcategoria == 0))
+            int tempCategoriaId = _context.CategoriaAnuncio.OrderBy(m => m.Nome).FirstOrDefault().Id;
+            olxPay = olxDelivery == true ? true : olxPay;
+            ViewData["verNotView"] = verNotView;
+            ViewBag.olxPay = olxPay;
+            ViewBag.olxDelivery = olxDelivery;
+            if (categoriaId > 0)
             {
-                return View(await _context.Anuncio.Where(m =>
-                    m.NotView == verNotView &&
-                    m.OlxPay == olxPay &&
-                    m.OlxDelivery == olxDelivery &&
-                    m.CategoriaAnuncioId == 1 &&
-                    m.SubcategoriaAnuncioId == 1).ToListAsync());
-            }
-            else if (categoria != null && categoria != 0)
-            {
-                if (subcategoria != null && subcategoria != 0)
+                ViewBag.categoriaId = new SelectList(_context.CategoriaAnuncio.OrderBy(m => m.Nome), "Id", "Nome", categoriaId);
+                if (subcategoriaId > 0)
                 {
-                    return View(await _context.Anuncio.Where(m =>
-                        m.NotView == verNotView &&
-                        m.OlxPay == olxPay &&
-                        m.OlxDelivery == olxDelivery &&
-                        m.CategoriaAnuncioId == categoria &&
-                        m.SubcategoriaAnuncioId == subcategoria).ToListAsync());
+                    ViewBag.subcategoriaId = new SelectList(_context.SubcategoriaAnuncio.Where(m => m.CategoriaAnuncioId == categoriaId).OrderBy(m => m.Nome), "Id", "Nome", subcategoriaId);
+                    ViewData["subCategoriaEmpty"] = false;
                 }
                 else
                 {
-                    return View(await _context.Anuncio.Where(m =>
-                        m.NotView == verNotView &&
-                        m.OlxPay == olxPay &&
-                        m.OlxDelivery == olxDelivery &&
-                        m.CategoriaAnuncioId == categoria).ToListAsync());
+                    ViewBag.subcategoriaId = new SelectList(_context.SubcategoriaAnuncio.Where(m => m.CategoriaAnuncioId == categoriaId).OrderBy(m => m.Nome), "Id", "Nome");
+                    ViewData["subCategoriaEmpty"] = true;
                 }
             }
             else
             {
-                return View(await _context.Anuncio.Where(m =>
-                    m.NotView == verNotView &&
-                    m.OlxPay == olxPay &&
-                    m.OlxDelivery == olxDelivery &&
-                    m.SubcategoriaAnuncioId == subcategoria).ToListAsync());
+                ViewBag.categoriaId = new SelectList(_context.CategoriaAnuncio.OrderBy(m => m.Nome), "Id", "Nome");
+                ViewBag.subcategoriaId = new SelectList(_context.SubcategoriaAnuncio.Where(m => m.CategoriaAnuncioId == tempCategoriaId).OrderBy(m => m.Nome), "Id", "Nome");
+                ViewData["subCategoriaEmpty"] = false;
             }
-            ViewData["verNotView"] = verNotView;
-            ViewData["Categora"] = new SelectList(_context.CategoriaAnuncio, "Id", "Nome");
-            ViewData["Subcategoria"] = new SelectList(_context.SubcategoriaAnuncio, "Id", "Nome");
 
-
-            if (categoria != null)
+            if ((categoriaId == null || categoriaId == 0) && (subcategoriaId == null || subcategoriaId == 0))
             {
-
+                var tempAnuncio = await _context.Anuncio
+                    .Include(m => m.SubcategoriaAnuncio)
+                    .Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == tempCategoriaId 
+                    && m.OlxPay == olxPay
+                    && m.OlxDelivery == olxDelivery
+                    && m.NotView == verNotView)
+                    .AsNoTracking()
+                    .ToListAsync();
+                //var anuncio = await _context.Anuncio.Include(b=>b.SubcategoriaAnuncio).Where(m =>
+                //    m.NotView == verNotView &&
+                //    m.OlxPay == olxPay &&
+                //    m.OlxDelivery == olxDelivery &&
+                //    m.SubcategoriaAnuncio.CategoriaAnuncioId.Equals(2)).AsNoTracking().ToListAsync();
+                //anuncio.Where("SubcategoriaAnuncio.CategoriaAnuncioId == tempCategoriaId").ToList();
+                return View(tempAnuncio);
             }
+            else if (categoriaId != null && categoriaId != 0)
+            {
+                if (subcategoriaId != null && subcategoriaId != 0)
+                {
+                    var tempAnuncio = await _context.Anuncio
+                        .Where(m => m.SubcategoriaAnuncioId == subcategoriaId 
+                        && m.OlxPay == olxPay 
+                        && m.OlxDelivery == olxDelivery 
+                        && m.NotView == verNotView)
+                        .AsNoTracking()
+                        .ToListAsync();
+                    return View(tempAnuncio);
+                }
+                else
+                {
+                    var tempanuncio = await _context.Anuncio
+                        .Include(m => m.SubcategoriaAnuncio)
+                        .Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == categoriaId
+                        && m.OlxPay == olxPay
+                        && m.OlxDelivery == olxDelivery
+                        && m.NotView == verNotView)
+                        .AsNoTracking()
+                        .ToListAsync();
+                    return View(tempanuncio);
+                    //m.NotView == verNotView &&
+                    //m.OlxPay == olxPay &&
+                    //m.OlxDelivery == olxDelivery //&&
+                    //                             //m.CategoriaAnuncioId == categoria
+                    //);.ToListAsync());
+                }
+            }
+            else
+            {
+                var tempAnuncio = await _context.Anuncio
+                    .Where(m => m.SubcategoriaAnuncioId == subcategoriaId
+                    && m.OlxPay == olxPay
+                    && m.OlxDelivery == olxDelivery
+                    && m.NotView == verNotView)
+                    .AsNoTracking()
+                    .ToListAsync();
+                return View(tempAnuncio);
+            }
+
         }
         //POST: Atualizar NotView em anuncio
         public async Task<bool> UpdateNotView(bool notView, int id)
@@ -121,6 +161,16 @@ namespace ControleDeLeiloes.Controllers
                 }
             }
             return true;
+        }
+        // POST: Subcategoria
+        public JsonResult PostSubcategoria(int categoriaId)
+        {
+            if (categoriaId > 0)
+            {
+                var tempSub = _context.SubcategoriaAnuncio.AsNoTracking().ToList().Where(m => m.CategoriaAnuncioId == categoriaId).OrderBy(x => x.Nome).ToList();
+                return Json(tempSub);
+            }
+            return Json(false);
         }
         // GET: Anuncios/EliminarAnunciosInvalidos
         public IActionResult EliminarAnunciosInvalidos()
@@ -220,8 +270,16 @@ namespace ControleDeLeiloes.Controllers
                 listPaginas.Add(link);
                 for (int i = 2; i <= qntPaginas; i++)
                 {
-                    link = urlOlx.Substring(0, urlOlx.IndexOf("?") + 1) + "o=" + i + "&" + urlOlx.Substring(urlOlx.IndexOf("?") + 1, urlOlx.Length - (urlOlx.IndexOf("?") + 1));
-                    listPaginas.Add(link);
+                    if (urlOlx.IndexOf("?") > 0)
+                    {
+                        link = urlOlx.Substring(0, urlOlx.IndexOf("?") + 1) + "o=" + i + "&" + urlOlx.Substring(urlOlx.IndexOf("?") + 1, urlOlx.Length - (urlOlx.IndexOf("?") + 1));
+                        listPaginas.Add(link);
+                    }
+                    else
+                    {
+                        link = urlOlx + "?o=" + i;
+                        listPaginas.Add(link);
+                    }
                 }
 
                 //baixar páginas
@@ -332,7 +390,7 @@ namespace ControleDeLeiloes.Controllers
                 {
                     Progresso.MensagemErro = e.Message;
                 }
-                
+
 
                 //foreach (Anuncio item in dadosAnuncios)
                 //{
@@ -643,6 +701,9 @@ namespace ControleDeLeiloes.Controllers
                                         };
                 int count = 0;
                 Boolean vendedorProibido = false;
+
+                // VER O USO DE INTERSECT PAR COMPARAR TODOS OS ANUNCIOS DE UMA VEZ SÓ
+
                 foreach (string element in excludentes)
                 {
                     count++;
@@ -659,112 +720,7 @@ namespace ControleDeLeiloes.Controllers
                 }
                 else
                 {
-                    //imagens
-                    posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC");
-                    count = 0;
-                    while (posicao1 > -1 && count < 3)
-                    {
-                        count++;
-                        posicao1 += 27;
-                        tamanho = anuncio.IndexOf("alt=", posicao1) - 2 - posicao1;
-                        if (tamanho > 0)
-                        {
-                            Uri uriResult;
-                            string uriTmp = anuncio.Substring(posicao1, tamanho);
-                            bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
-                                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-                            if (result)
-                            {
-                                switch (count)
-                                {
-                                    case 1:
-                                        anuncioUnico.Img1 = uriTmp;
-                                        break;
-                                    case 2:
-                                        anuncioUnico.Img2 = uriTmp;
-                                        break;
-                                    case 3:
-                                        anuncioUnico.Img3 = uriTmp;
-                                        break;
-                                }
-                            }
-                        }
-                        posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC", posicao1);
-                    }
-                    //Descricao
-                    posicao1 = anuncio.IndexOf("sc-1sj3nln-1 eOSweo sc-ifAKCX cmFKIN");
-                    posicao1 = anuncio.IndexOf("weight", posicao1) + 13;
-                    tamanho = anuncio.IndexOf("/span", posicao1) - 1 - posicao1;
-                    if (tamanho > 0)
-                    {
-                        anuncioUnico.Descricao = anuncio.Substring(posicao1, tamanho);
-                    }
-                    //Titulo
-                    posicao1 = anuncio.IndexOf("og:title");
-                    if (posicao1 > 0)
-                    {
-                        posicao1 += 19;
-                        tamanho = anuncio.IndexOf("/><meta", posicao1) - 1 - posicao1;
-
-                        if (tamanho > 0)
-                        {
-                            anuncioUnico.Titulo = anuncio.Substring(posicao1, tamanho);
-                        }
-                    }
-                    //Data Publicação
-                    posicao1 = anuncio.IndexOf("Publicado em <") + 21;
-                    tamanho = 5;
-                    anuncioUnico.DtPublicacao = DateTime.ParseExact(anuncio.Substring(posicao1, tamanho), "dd/MM", CultureInfo.InvariantCulture);
-                    //preço
-                    posicao1 = anuncio.IndexOf("price") + 8;
-                    tamanho = anuncio.IndexOf(",", posicao1) - 1 - posicao1;
-                    if (tamanho > 0)
-                    {
-                        anuncioUnico.VlAnunciado = Int32.Parse(anuncio.Substring(posicao1, tamanho));
-                    }
-                    //bairro
-                    posicao1 = anuncio.IndexOf("Bairro<");
-                    if (posicao1 > 0)
-                    {
-                        posicao1 = anuncio.IndexOf("<dd ", posicao1);
-                        posicao1 = anuncio.IndexOf(">", posicao1) + 1;
-                        tamanho = anuncio.IndexOf("</dd>", posicao1) - posicao1;
-                        if (tamanho > 0)
-                        {
-                            anuncioUnico.Bairro = anuncio.Substring(posicao1, tamanho);
-                        }
-                    }
-                    else
-                    {
-                        posicao1 = anuncio.IndexOf("Município<");
-                        if (posicao1 > 0)
-                        {
-                            posicao1 = anuncio.IndexOf("<dd ", posicao1);
-                            posicao1 = anuncio.IndexOf(">", posicao1) + 1;
-                            tamanho = anuncio.IndexOf("</dd>", posicao1) - posicao1;
-
-                            if (tamanho > 0)
-                            {
-                                anuncioUnico.Bairro = anuncio.Substring(posicao1, tamanho);
-                            }
-                        }
-                    }
-                    //telefone
-                    posicao1 = anuncio.IndexOf(";phone") + 38;
-                    tamanho = anuncio.IndexOf("&quot", posicao1) - posicao1;
-
-                    if (tamanho > 0)
-                    {
-                        anuncioUnico.Telefone = anuncio.Substring(posicao1, tamanho);
-                    }
-                    // inclusão dos dados do anuncio na lista dadosAnuncios
-                    if (ModelState.IsValid)
-                    {
-                        anuncioUnico.Id = (lastId > 0) ? lastId + 1 : 1;
-                        lastId++;
-                        dadosAnuncios.Add(anuncioUnico);
-                    }
-
+                    int categoriaId = 0;
                     //Categoria
                     posicao1 = anuncio.IndexOf("mainCategory\":") + 15;
                     tamanho = anuncio.IndexOf("subCategory\":", posicao1) - 3 - posicao1;
@@ -772,11 +728,7 @@ namespace ControleDeLeiloes.Controllers
                     if (tamanho > 0)
                     {
                         CategoriaAnuncio tempCategoria = categoriaAnuncios.FirstOrDefault(m => m.Nome == anuncio.Substring(posicao1, tamanho));
-                        if (tempCategoria != null)
-                        {
-                            anuncioUnico.CategoriaAnuncioId = tempCategoria.Id;
-                        }
-                        else
+                        if (tempCategoria == null)
                         {
                             //cadastrar nova categoria
                             tempCategoria = new CategoriaAnuncio();
@@ -785,57 +737,162 @@ namespace ControleDeLeiloes.Controllers
                             tempCategoria.Nome = anuncio.Substring(posicao1, tamanho);
                             categoriaAnuncios.Add(tempCategoria);
                             novasCategoriaAnuncios.Add(tempCategoria);
+                        }
+                        categoriaId = tempCategoria.Id;
 
-                            anuncioUnico.CategoriaAnuncioId = tempCategoria.Id;
+                        //SubCategoria
+                        posicao1 = anuncio.IndexOf("subCategory\":") + 14;
+                        tamanho = anuncio.IndexOf("mainCategoryID", posicao1) - 3 - posicao1;
+
+                        if (tamanho > 0)
+                        {
+                            //verifica se a subcategoria já existe associada a categoria do anuncio
+                            SubcategoriaAnuncio tempSubcategoria = subcategoriaAnuncios.FirstOrDefault(m => m.CategoriaAnuncioId == categoriaId && m.Nome == anuncio.Substring(posicao1, tamanho));
+                            if (tempSubcategoria != null)
+                            {
+                                anuncioUnico.SubcategoriaAnuncioId = tempSubcategoria.Id;
+                            }
+                            else
+                            {
+                                //cadastrar nova subcategoria
+                                tempSubcategoria = new SubcategoriaAnuncio();
+                                lastSubcategoriaAnuncioId++;
+                                tempSubcategoria.Id = lastSubcategoriaAnuncioId;
+                                tempSubcategoria.Nome = anuncio.Substring(posicao1, tamanho);
+                                tempSubcategoria.CategoriaAnuncioId = categoriaId;
+                                subcategoriaAnuncios.Add(tempSubcategoria);
+                                novasSubcategoriaAnuncios.Add(tempSubcategoria);
+
+                                anuncioUnico.SubcategoriaAnuncioId = tempSubcategoria.Id;
+                            }
                         }
                     }
-
-                    //SubCategoria
-                    posicao1 = anuncio.IndexOf("subCategory\":") + 14;
-                    tamanho = anuncio.IndexOf("mainCategoryID", posicao1) - 3 - posicao1;
-
-                    if (tamanho > 0)
+                    if (anuncioUnico.SubcategoriaAnuncioId > 0)
                     {
-                        SubcategoriaAnuncio tempSubcategoria = subcategoriaAnuncios.FirstOrDefault(m => m.Nome == anuncio.Substring(posicao1, tamanho));
-                        if (tempSubcategoria != null)
+                        //imagens
+                        posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC");
+                        count = 0;
+                        while (posicao1 > -1 && count < 3)
                         {
-                            anuncioUnico.SubcategoriaAnuncioId = tempSubcategoria.Id;
+                            count++;
+                            posicao1 += 27;
+                            tamanho = anuncio.IndexOf("alt=", posicao1) - 2 - posicao1;
+                            if (tamanho > 0)
+                            {
+                                Uri uriResult;
+                                string uriTmp = anuncio.Substring(posicao1, tamanho);
+                                bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
+                                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+                                if (result)
+                                {
+                                    switch (count)
+                                    {
+                                        case 1:
+                                            anuncioUnico.Img1 = uriTmp;
+                                            break;
+                                        case 2:
+                                            anuncioUnico.Img2 = uriTmp;
+                                            break;
+                                        case 3:
+                                            anuncioUnico.Img3 = uriTmp;
+                                            break;
+                                    }
+                                }
+                            }
+                            posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC", posicao1);
+                        }
+                        //Descricao
+                        posicao1 = anuncio.IndexOf("sc-1sj3nln-1 eOSweo sc-ifAKCX cmFKIN");
+                        posicao1 = anuncio.IndexOf("weight", posicao1) + 13;
+                        tamanho = anuncio.IndexOf("/span", posicao1) - 1 - posicao1;
+                        if (tamanho > 0)
+                        {
+                            anuncioUnico.Descricao = anuncio.Substring(posicao1, tamanho);
+                        }
+                        //Titulo
+                        posicao1 = anuncio.IndexOf("og:title");
+                        if (posicao1 > 0)
+                        {
+                            posicao1 += 19;
+                            tamanho = anuncio.IndexOf("/><meta", posicao1) - 1 - posicao1;
+
+                            if (tamanho > 0)
+                            {
+                                anuncioUnico.Titulo = anuncio.Substring(posicao1, tamanho);
+                            }
+                        }
+                        //Data Publicação
+                        posicao1 = anuncio.IndexOf("Publicado em <") + 21;
+                        tamanho = 5;
+                        anuncioUnico.DtPublicacao = DateTime.ParseExact(anuncio.Substring(posicao1, tamanho), "dd/MM", CultureInfo.InvariantCulture);
+                        //preço
+                        posicao1 = anuncio.IndexOf("price") + 8;
+                        tamanho = anuncio.IndexOf(",", posicao1) - 1 - posicao1;
+                        if (tamanho > 0)
+                        {
+                            anuncioUnico.VlAnunciado = Int32.Parse(anuncio.Substring(posicao1, tamanho));
+                        }
+                        //bairro
+                        posicao1 = anuncio.IndexOf("Bairro<");
+                        if (posicao1 > 0)
+                        {
+                            posicao1 = anuncio.IndexOf("<dd ", posicao1);
+                            posicao1 = anuncio.IndexOf(">", posicao1) + 1;
+                            tamanho = anuncio.IndexOf("</dd>", posicao1) - posicao1;
+                            if (tamanho > 0)
+                            {
+                                anuncioUnico.Bairro = anuncio.Substring(posicao1, tamanho);
+                            }
                         }
                         else
                         {
-                            //cadastrar nova subcategoria
-                            tempSubcategoria = new SubcategoriaAnuncio();
-                            lastSubcategoriaAnuncioId++;
-                            tempSubcategoria.Id = lastSubcategoriaAnuncioId;
-                            tempSubcategoria.Nome = anuncio.Substring(posicao1, tamanho);
-                            subcategoriaAnuncios.Add(tempSubcategoria);
-                            novasSubcategoriaAnuncios.Add(tempSubcategoria);
+                            posicao1 = anuncio.IndexOf("Município<");
+                            if (posicao1 > 0)
+                            {
+                                posicao1 = anuncio.IndexOf("<dd ", posicao1);
+                                posicao1 = anuncio.IndexOf(">", posicao1) + 1;
+                                tamanho = anuncio.IndexOf("</dd>", posicao1) - posicao1;
 
-                            anuncioUnico.SubcategoriaAnuncioId = tempSubcategoria.Id;
+                                if (tamanho > 0)
+                                {
+                                    anuncioUnico.Bairro = anuncio.Substring(posicao1, tamanho);
+                                }
+                            }
+                        }
+                        //telefone
+                        posicao1 = anuncio.IndexOf(";phone") + 38;
+                        tamanho = anuncio.IndexOf("&quot", posicao1) - posicao1;
+
+                        if (tamanho > 0)
+                        {
+                            anuncioUnico.Telefone = anuncio.Substring(posicao1, tamanho);
+                        }
+                        // inclusão dos dados do anuncio na lista dadosAnuncios
+                        anuncioUnico.Id = (lastId > 0) ? lastId + 1 : 1;
+                        lastId++;
+                        dadosAnuncios.Add(anuncioUnico);
+
+                        //OlxPay
+                        posicao1 = anuncio.IndexOf("olxPay\":{\"enabled");
+                        if (posicao1 > 0)
+                        {
+                            anuncioUnico.OlxPay = true;
+                        }
+                        else
+                        {
+                            anuncioUnico.OlxPay = false;
+                        }
+                        //OlxDelivery
+                        posicao1 = anuncio.IndexOf("olxDelivery\":{\"enabled");
+                        if (posicao1 > 0)
+                        {
+                            anuncioUnico.OlxDelivery = true;
+                        }
+                        else
+                        {
+                            anuncioUnico.OlxDelivery = false;
                         }
                     }
-
-                    //OlxPay
-                    posicao1 = anuncio.IndexOf("olxPay\":{\"enabled");
-                    if (posicao1 > 0)
-                    {
-                        anuncioUnico.OlxPay = true;
-                    }
-                    else
-                    {
-                        anuncioUnico.OlxPay = false;
-                    }
-                    //OlxDelivery
-                    posicao1 = anuncio.IndexOf("olxDelivery\":{\"enabled");
-                    if (posicao1 > 0)
-                    {
-                        anuncioUnico.OlxDelivery = true;
-                    }
-                    else
-                    {
-                        anuncioUnico.OlxDelivery = false;
-                    }
-
                 }
             }
             catch (Exception e)

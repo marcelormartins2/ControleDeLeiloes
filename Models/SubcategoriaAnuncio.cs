@@ -5,5 +5,7 @@ namespace ControleDeLeiloes.Models
     {
         public int Id { get; set; }
         public string Nome { get; set; }
+        public CategoriaAnuncio CategoriaAnuncio { get; set; }
+        public int CategoriaAnuncioId { get; set; }
     }
 }

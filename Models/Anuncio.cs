@@ -13,8 +13,6 @@ namespace ControleDeLeiloes.Models
         public string IdAnuncio { get; set; }
         public string Titulo { get; set; }
         public string Link { get; set; }
-        public CategoriaAnuncio CategoriaAnuncio { get; set; }
-        public int CategoriaAnuncioId { get; set; }
         public SubcategoriaAnuncio SubcategoriaAnuncio { get; set; }
         public int SubcategoriaAnuncioId { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yy}")]

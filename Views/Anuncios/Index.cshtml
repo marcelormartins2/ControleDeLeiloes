@@ -21,8 +21,30 @@
                             {
                                 <a asp-controller="Anuncios" asp-action="Index" asp-route-verNotView=true><span title="Visualizar todos">Visualizar todos</span> </a>
                             }
-                            <p>Categoria: @ViewBag.Categoria SubCategoria: @ViewBag.SubCategoria @Html.CheckBox("OlxPay") OlxPay @Html.CheckBox("OlxDelivery") OlxEntrega</p>
-                            <p>Valor: min @Html.TextBox("min") max @Html.TextBox("max")</p>
+
+                            <form asp-action="Index">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        Categoria:
+                                        @Html.DropDownList("categoriaId")
+                                        Subcategoria:
+                                        @if (ViewBag.subCategoriaEmpty)
+                                        {
+                                            @Html.DropDownList("subcategoriaId", null, "Selecione....", htmlAttributes: new { @id = "subcategoriaId" })
+                                        }
+                                        else
+                                        {
+                                            @Html.DropDownList("subcategoriaId")
+                                        }
+                                        @Html.CheckBox("olxPay") OlxPay
+                                        @Html.CheckBox("olxDelivery") OlxEntrega
+                                        <input type="submit" value="Filtrar" />
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="col-md-10">
+                                Valor: min @Html.TextBox("min") max @Html.TextBox("max")
+                            </div>
                         </div>
                         <div class="panel-body">
                             <table id="ListaAnuncios" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -144,6 +166,38 @@
                 table.draw();
             });
 
+           $("#categoriaId").change(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("PostSubcategoria", "Anuncios")',
+                    data: {categoriaId: $('#categoriaId').val()},
+                    success: function (data) {
+                        $("#subcategoriaId").empty();
+                        $("#subcategoriaId").append('<option value>Selecione...</option>');
+                        $.each(data, function (index, element) {
+                            $("#subcategoriaId").append('<option value="' + element.id + '">' + element.nome + '</option>');
+                        });
+                    }
+                });
+            });
+
+
+@*$('#Categoria, #Subcatgoria').change(function () {
+     $.ajax({
+         type: 'POST',
+         url: '@Url.Action("Index", "Anuncios")',
+         data: {
+             verNotView: false,
+             categoria: $('#Categoria').val(),
+             subcategoria: $('#Categoria').val(),
+             olxPay: false,
+             olxDelivery: false
+         },
+         success: function(res) {
+             table.draw();
+         }
+     });
+    });*@
         });
 
        function UpdateNotView(elem) {
@@ -154,28 +208,28 @@
                 url: '@Url.Action("UpdateNotView", "Anuncios")',
                 data: { NotView: isDone,Id:cid },
                 success: function(res) {
-                    console.log(res);
+                console.log(res);
                 }
-            });
+                });
 
-           if (isDone) {
-               var table = document.getElementById("ListaAnuncios");
-               var rowIndex = document.getElementById(cid).rowIndex;
-               table.deleteRow(rowIndex);
-           }
-        }
+                if (isDone) {
+                var table = document.getElementById("ListaAnuncios");
+                var rowIndex = document.getElementById(cid).rowIndex;
+                table.deleteRow(rowIndex);
+                }
+                }
 
-        function VerNotView(elem) {
-            var isDone = $(elem).is(':checked');
-            $.ajax({
+                function VerNotView(elem) {
+                var isDone = $(elem).is(':checked');
+                $.ajax({
                 type: 'POST',
                 url: '@Url.Action("Index", "Anuncios")',
                 data: { VerNotView: isDone},
                 success: function(res) {
-                    console.log(res);
+                console.log(res);
                 }
-            });
-        }
+                });
+                }
 
     </script>
 }
