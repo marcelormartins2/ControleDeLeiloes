@@ -32,7 +32,7 @@ namespace ControleDeLeiloes.Controllers
         static List<SubcategoriaAnuncio> subcategoriaAnuncios = new List<SubcategoriaAnuncio>();
         static List<CategoriaAnuncio> novasCategoriaAnuncios = new List<CategoriaAnuncio>();
         static List<SubcategoriaAnuncio> novasSubcategoriaAnuncios = new List<SubcategoriaAnuncio>();
-        static readonly int qntPaginas = 5;
+        static int qntPaginas = 5;
         static int lastId = 0;
         static int lastCategoriaAnuncioId = 0;
         static int lastSubcategoriaAnuncioId = 0;
@@ -49,7 +49,7 @@ namespace ControleDeLeiloes.Controllers
             return Json(Progresso);
         }
         // GET: Anuncios
-        public async Task<IActionResult> Index(bool verNotView, int? categoriaId, int? subcategoriaId, bool olxPay=true, bool olxDelivery=true)
+        public async Task<IActionResult> Index(bool verNotView, int? categoriaId, int? subcategoriaId, bool olxPay = true, bool olxDelivery = true)
         {
             int tempCategoriaId = _context.CategoriaAnuncio.OrderBy(m => m.Nome).FirstOrDefault().Id;
             olxPay = olxDelivery == true ? true : olxPay;
@@ -62,31 +62,29 @@ namespace ControleDeLeiloes.Controllers
                 if (subcategoriaId > 0)
                 {
                     ViewBag.subcategoriaId = new SelectList(_context.SubcategoriaAnuncio.Where(m => m.CategoriaAnuncioId == categoriaId).OrderBy(m => m.Nome), "Id", "Nome", subcategoriaId);
-                    ViewData["subCategoriaEmpty"] = false;
                 }
                 else
                 {
                     ViewBag.subcategoriaId = new SelectList(_context.SubcategoriaAnuncio.Where(m => m.CategoriaAnuncioId == categoriaId).OrderBy(m => m.Nome), "Id", "Nome");
-                    ViewData["subCategoriaEmpty"] = true;
                 }
             }
             else
             {
                 ViewBag.categoriaId = new SelectList(_context.CategoriaAnuncio.OrderBy(m => m.Nome), "Id", "Nome");
                 ViewBag.subcategoriaId = new SelectList(_context.SubcategoriaAnuncio.Where(m => m.CategoriaAnuncioId == tempCategoriaId).OrderBy(m => m.Nome), "Id", "Nome");
-                ViewData["subCategoriaEmpty"] = false;
             }
 
             if ((categoriaId == null || categoriaId == 0) && (subcategoriaId == null || subcategoriaId == 0))
             {
                 var tempAnuncio = await _context.Anuncio
                     .Include(m => m.SubcategoriaAnuncio)
-                    .Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == tempCategoriaId 
+                    .Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == tempCategoriaId
                     && m.OlxPay == olxPay
                     && m.OlxDelivery == olxDelivery
                     && m.NotView == verNotView)
                     .AsNoTracking()
                     .ToListAsync();
+                ViewData["subCategoriaEmpty"] = true;
                 //var anuncio = await _context.Anuncio.Include(b=>b.SubcategoriaAnuncio).Where(m =>
                 //    m.NotView == verNotView &&
                 //    m.OlxPay == olxPay &&
@@ -100,12 +98,13 @@ namespace ControleDeLeiloes.Controllers
                 if (subcategoriaId != null && subcategoriaId != 0)
                 {
                     var tempAnuncio = await _context.Anuncio
-                        .Where(m => m.SubcategoriaAnuncioId == subcategoriaId 
-                        && m.OlxPay == olxPay 
-                        && m.OlxDelivery == olxDelivery 
+                        .Where(m => m.SubcategoriaAnuncioId == subcategoriaId
+                        && m.OlxPay == olxPay
+                        && m.OlxDelivery == olxDelivery
                         && m.NotView == verNotView)
                         .AsNoTracking()
                         .ToListAsync();
+                    ViewData["subCategoriaEmpty"] = false;
                     return View(tempAnuncio);
                 }
                 else
@@ -118,6 +117,7 @@ namespace ControleDeLeiloes.Controllers
                         && m.NotView == verNotView)
                         .AsNoTracking()
                         .ToListAsync();
+                    ViewData["subCategoriaEmpty"] = true;
                     return View(tempanuncio);
                     //m.NotView == verNotView &&
                     //m.OlxPay == olxPay &&
@@ -135,6 +135,7 @@ namespace ControleDeLeiloes.Controllers
                     && m.NotView == verNotView)
                     .AsNoTracking()
                     .ToListAsync();
+                ViewData["subCategoriaEmpty"] = false;
                 return View(tempAnuncio);
             }
 
@@ -237,18 +238,18 @@ namespace ControleDeLeiloes.Controllers
             return View();
         }
         //Atualizar anuncios
-        public async Task<bool> AtualizarAnuncios(String urlOlx)
+        public async Task<bool> AtualizarAnuncios(String urlOlx, int numPaginas)
         {
             Uri uriResult;
             string uriTmp = urlOlx;
             bool result = Uri.TryCreate(uriTmp, UriKind.Absolute, out uriResult)
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
-            if (result && Progresso.EtapaAnuncio == 0 && Progresso.EtapaPagina == 0)
+            if (result && Progresso.EtapaAnuncio == 0 && Progresso.EtapaPagina == 0 && numPaginas > 0)
             {
                 //barra de progresso
                 //string[] texto = new string[qntPaginas];
-
+                qntPaginas = numPaginas;
                 Progresso.QuantidadePaginas = qntPaginas;
                 Progresso.QuantidadeAnuncios = 0;
                 Progresso.EtapaPagina = 1;
@@ -603,7 +604,7 @@ namespace ControleDeLeiloes.Controllers
                 if (url.Length < 2083)
                 {
                     s_webRequest = WebRequest.CreateHttp(url);
-                    s_webRequest.Method = "GET";
+                    s_webRequest.Method = "PUT";
                     s_webRequest.Proxy = null;
                     //s_webRequest.UserAgent = "RequisicaoWebDemo";
 
@@ -619,6 +620,16 @@ namespace ControleDeLeiloes.Controllers
                     streamDados.Close();
                     resposta.Close();
                 }
+            }
+            catch (WebException webex)
+            {
+                Progresso.MensagemErro = url + " / " + webex.Message + " / " + webex.StackTrace;
+                //WebResponse errResp = webex.Response;
+                //using (Stream respStream = errResp.GetResponseStream())
+                //{
+                //    StreamReader reader = new StreamReader(respStream);
+                //    Progresso.MensagemErro = reader.ReadToEnd();
+                //}
             }
             catch (Exception e)
             {
@@ -712,13 +723,13 @@ namespace ControleDeLeiloes.Controllers
                         vendedorProibido = true;
                     }
                 }
-                if (vendedorProibido)
-                {
-                    //decrementa quantidade na barra de progresso
-                    Progresso.QuantidadeAnuncios--;
-                    Progresso.EtapaAnuncio--;
-                }
-                else
+                if (!vendedorProibido)
+                //{
+                //    //decrementa quantidade na barra de progresso
+                //    //Progresso.QuantidadeAnuncios--;
+                //    Progresso.EtapaAnuncio++;
+                //}
+                //else
                 {
                     int categoriaId = 0;
                     //Categoria
@@ -822,9 +833,9 @@ namespace ControleDeLeiloes.Controllers
                             }
                         }
                         //Data Publicação
-                        posicao1 = anuncio.IndexOf("Publicado em <") + 21;
-                        tamanho = 5;
-                        anuncioUnico.DtPublicacao = DateTime.ParseExact(anuncio.Substring(posicao1, tamanho), "dd/MM", CultureInfo.InvariantCulture);
+                        posicao1 = anuncio.IndexOf(";listTime") + 22;
+                        tamanho = 10;
+                        anuncioUnico.DtPublicacao = DateTime.ParseExact(anuncio.Substring(posicao1, tamanho), "yyyy-MM-dd", CultureInfo.InvariantCulture);
                         //preço
                         posicao1 = anuncio.IndexOf("price") + 8;
                         tamanho = anuncio.IndexOf(",", posicao1) - 1 - posicao1;
@@ -873,7 +884,7 @@ namespace ControleDeLeiloes.Controllers
                         dadosAnuncios.Add(anuncioUnico);
 
                         //OlxPay
-                        posicao1 = anuncio.IndexOf("olxPay\":{\"enabled");
+                        posicao1 = anuncio.IndexOf("olxPay\":{\"enabled\":true");
                         if (posicao1 > 0)
                         {
                             anuncioUnico.OlxPay = true;
@@ -883,7 +894,7 @@ namespace ControleDeLeiloes.Controllers
                             anuncioUnico.OlxPay = false;
                         }
                         //OlxDelivery
-                        posicao1 = anuncio.IndexOf("olxDelivery\":{\"enabled");
+                        posicao1 = anuncio.IndexOf("olxDelivery\":{\"enabled\":true");
                         if (posicao1 > 0)
                         {
                             anuncioUnico.OlxDelivery = true;
@@ -897,8 +908,7 @@ namespace ControleDeLeiloes.Controllers
             }
             catch (Exception e)
             {
-                Progresso.MensagemErro = e.Message + " / " + e.StackTrace;
-                throw;
+                Progresso.MensagemErro = e.Message + e.StackTrace;
             }
 
             return 0;
