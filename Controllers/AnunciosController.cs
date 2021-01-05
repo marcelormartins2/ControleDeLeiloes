@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,7 +24,7 @@ namespace ControleDeLeiloes.Controllers
             _context = context;
         }
 
-        static readonly WebRequest s_WebRequest = WebRequest.CreateHttp("https://df.olx.com.br/para-a-sua-casa?sf=1");
+        static readonly HttpClient clienteHttp = new HttpClient();
         static List<String> conteudoPaginas = new List<string>();
         static List<String> listaLinksAnuncios = new List<string>();
         static List<String> conteudoAnuncios = new List<string>();
@@ -527,9 +528,10 @@ namespace ControleDeLeiloes.Controllers
         //getPaginas multi task
         private async Task getPaginas(List<string> listPaginas)
         {
+            ServicePointManager.DefaultConnectionLimit = 100;
             IEnumerable<Task<int>> downloadTasksQuery =
                from url in listPaginas
-               select ProcessUrlAsync(url, s_WebRequest);
+               select ProcessUrlAsync(url);
 
             List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
 
@@ -541,7 +543,7 @@ namespace ControleDeLeiloes.Controllers
         }
 
         //processUrl das páginas multi task
-        private async Task<int> ProcessUrlAsync(string url, WebRequest s_webRequest)
+        private async Task<int> ProcessUrlAsync(string url)
         {
             //atraso para não dar erro 503 de limete de solicitações no site
             Thread.Sleep(50);
@@ -553,21 +555,9 @@ namespace ControleDeLeiloes.Controllers
                     Progresso.EtapaPagina++;
                 }
 
-                s_webRequest = WebRequest.CreateHttp(url);
-                s_webRequest.Method = "GET";
-                s_webRequest.Proxy = null;
+                var resposta = await clienteHttp.GetStringAsync(url);
 
-                //s_webRequest.UserAgent = "RequisicaoWebDemo";
-
-                var resposta = await s_webRequest.GetResponseAsync();
-                var streamDados = resposta.GetResponseStream();
-                var reader = new StreamReader(streamDados);
-                var objResponse = reader.ReadToEnd();
-
-                conteudoPaginas.Add(objResponse.ToString());
-                reader.Close();
-                streamDados.Close();
-                resposta.Close();
+                conteudoPaginas.Add(resposta);
             }
             catch (WebException e)
             {
@@ -582,7 +572,7 @@ namespace ControleDeLeiloes.Controllers
             Progresso.EtapaAnuncio = 0;
             IEnumerable<Task<int>> downloadTasksQuery =
                from url in links
-               select ProcessAnunciosAsync(url, s_WebRequest);
+               select ProcessAnunciosAsync(url);
 
             List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
 
@@ -594,7 +584,7 @@ namespace ControleDeLeiloes.Controllers
         }
 
         //processUrl  multi task
-        private async Task<int> ProcessAnunciosAsync(string url, WebRequest s_webRequest)
+        private async Task<int> ProcessAnunciosAsync(string url)
         {
             try
             {
@@ -603,22 +593,12 @@ namespace ControleDeLeiloes.Controllers
                 //acessr pagina do anuncio
                 if (url.Length < 2083)
                 {
-                    s_webRequest = WebRequest.CreateHttp(url);
-                    s_webRequest.Method = "PUT";
-                    s_webRequest.Proxy = null;
-                    //s_webRequest.UserAgent = "RequisicaoWebDemo";
 
-                    var resposta = await s_webRequest.GetResponseAsync();
-                    var streamDados = resposta.GetResponseStream();
-                    var reader = new StreamReader(streamDados);
-                    var objResponse = reader.ReadToEnd();
+                    Progresso.EtapaAnuncio++;
+                    var resposta = await clienteHttp.GetStringAsync(url);
 
                     //conteudoAnuncios.Add(objResponse.ToString());
-                    Progresso.EtapaAnuncio++;
-                    await ProcessDadosAnunciosAsync(objResponse.ToString());
-                    reader.Close();
-                    streamDados.Close();
-                    resposta.Close();
+                    await ProcessDadosAnunciosAsync(resposta);
                 }
             }
             catch (WebException webex)
@@ -723,13 +703,13 @@ namespace ControleDeLeiloes.Controllers
                         vendedorProibido = true;
                     }
                 }
-                if (!vendedorProibido)
-                //{
-                //    //decrementa quantidade na barra de progresso
-                //    //Progresso.QuantidadeAnuncios--;
-                //    Progresso.EtapaAnuncio++;
-                //}
-                //else
+                if (vendedorProibido)
+                {
+                    //decrementa quantidade na barra de progresso
+                    Progresso.QuantidadeAnuncios--;
+                    Progresso.EtapaAnuncio--;
+                }
+                else
                 {
                     int categoriaId = 0;
                     //Categoria

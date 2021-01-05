@@ -21,6 +21,7 @@ namespace ControleDeLeiloes.Data
         public virtual DbSet<VendedorProibido> VendedorProibido { get; set; }
         public virtual DbSet<CategoriaAnuncio> CategoriaAnuncio { get; set; }
         public virtual DbSet<SubcategoriaAnuncio> SubcategoriaAnuncio { get; set; }
+        public virtual DbSet<UrlAnuncio> UrlAnuncio { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
