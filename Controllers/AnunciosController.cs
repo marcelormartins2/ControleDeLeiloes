@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,10 +34,12 @@ namespace ControleDeLeiloes.Controllers
         static List<SubcategoriaAnuncio> subcategoriaAnuncios = new List<SubcategoriaAnuncio>();
         static List<CategoriaAnuncio> novasCategoriaAnuncios = new List<CategoriaAnuncio>();
         static List<SubcategoriaAnuncio> novasSubcategoriaAnuncios = new List<SubcategoriaAnuncio>();
+        static List<UrlAnuncio> UrlAnuncios = new List<UrlAnuncio>();
         static int qntPaginas = 5;
         static int lastId = 0;
         static int lastCategoriaAnuncioId = 0;
         static int lastSubcategoriaAnuncioId = 0;
+        static Task taskTemp;
         //ProgressBar
         private static Progresso Progresso = new Progresso { RegistrosBDAnalisados = -1 };
         public JsonResult GetProgresso()
@@ -302,6 +305,16 @@ namespace ControleDeLeiloes.Controllers
                 subcategoriaAnuncios = await _context.SubcategoriaAnuncio.ToListAsync();
 
                 //Total de anuncios
+
+                String agrupaPaginas = string.Join(",", conteudoPaginas.ToArray());
+
+                string pattern = @"\bdata-lurker_list_id\b";
+                Regex rgx = new Regex(pattern);
+
+                qntAnuncios = rgx.Matches(agrupaPaginas).Count();
+
+                qntAnuncios = 0;
+
                 foreach (String item in conteudoPaginas)
                 {
                     x = 0;
@@ -367,8 +380,8 @@ namespace ControleDeLeiloes.Controllers
                 //baixar anuncios
                 await getAnuncios(listaLinksAnuncios);
 
-                ////Extrair e gravar dados dos anuncios
-                //await getDadosAnuncios(conteudoAnuncios);
+                ////Extrair dados dos anuncios
+                await getDadosAnuncios(conteudoAnuncios);
 
                 //savar anuncios no banco de dados
                 _context.Anuncio.AddRange(dadosAnuncios);
@@ -402,6 +415,7 @@ namespace ControleDeLeiloes.Controllers
 
                 Thread.Sleep(3000);
                 Progresso.Gravado = true;
+                Progresso.EtapaDados = 0;
                 Progresso.EtapaAnuncio = 0;
                 Progresso.EtapaPagina = 0;
                 Progresso.MensagemErro = "";
@@ -529,9 +543,11 @@ namespace ControleDeLeiloes.Controllers
         private async Task getPaginas(List<string> listPaginas)
         {
             ServicePointManager.DefaultConnectionLimit = 100;
+            
             IEnumerable<Task<int>> downloadTasksQuery =
                from url in listPaginas
                select ProcessUrlAsync(url);
+
 
             List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
 
@@ -540,28 +556,43 @@ namespace ControleDeLeiloes.Controllers
                 Task<int> finishedTask = await Task.WhenAny(downloadTasks);
                 downloadTasks.Remove(finishedTask);
             }
+
+            //Task t = Task.WhenAll(downloadTasksQuery);
+            //try
+            //{
+            //    t.Wait();
+            //}
+            //catch { }
+
+            //if (t.Status == TaskStatus.RanToCompletion)
+            //    Progresso.MensagemErro = "Todas as páginas processadas com sucesso";
+            //else if (t.Status == TaskStatus.Faulted)
+            //    Progresso.MensagemErro = "Falha em algumas páginas";        
         }
 
-        //processUrl das páginas multi task
-        private async Task<int> ProcessUrlAsync(string url)
+            //processUrl das páginas multi task
+
+            private async Task<int> ProcessUrlAsync(string url)
         {
             //atraso para não dar erro 503 de limete de solicitações no site
             Thread.Sleep(50);
 
             try
             {
+
+                var resposta = await clienteHttp.GetStringAsync(url);
+
+                conteudoPaginas.Add(resposta);
                 if (Progresso.EtapaPagina < qntPaginas)
                 {
                     Progresso.EtapaPagina++;
                 }
 
-                var resposta = await clienteHttp.GetStringAsync(url);
-
-                conteudoPaginas.Add(resposta);
             }
             catch (WebException e)
             {
-                Progresso.MensagemErro = e.Message + " //StackTrace// " + e.StackTrace;
+                Progresso.MensagemErro = "Erro ProcessUrlAsync";
+                //Progresso.MensagemErro = e.Message + " //StackTrace// " + e.StackTrace;
             }
             return 0;
         }
@@ -581,6 +612,20 @@ namespace ControleDeLeiloes.Controllers
                 Task<int> finishedTask = await Task.WhenAny(downloadTasks);
                 downloadTasks.Remove(finishedTask);
             }
+
+
+            //Task t2 = Task.WhenAll(downloadTasksQuery);
+            //try
+            //{
+            //    t2.Wait();
+            //}
+            //catch { }
+
+            //if (t2.Status == TaskStatus.RanToCompletion)
+            //    Progresso.MensagemErro = "Todas os anuncios processados com sucesso";
+            //else if (t2.Status == TaskStatus.Faulted)
+            //    Progresso.MensagemErro = "Falha em alguns anuncios";
+
         }
 
         //processUrl  multi task
@@ -593,17 +638,15 @@ namespace ControleDeLeiloes.Controllers
                 //acessr pagina do anuncio
                 if (url.Length < 2083)
                 {
-
                     Progresso.EtapaAnuncio++;
                     var resposta = await clienteHttp.GetStringAsync(url);
-
-                    //conteudoAnuncios.Add(objResponse.ToString());
-                    await ProcessDadosAnunciosAsync(resposta);
+                    conteudoAnuncios.Add(resposta);
                 }
             }
             catch (WebException webex)
             {
-                Progresso.MensagemErro = url + " / " + webex.Message + " / " + webex.StackTrace;
+                Progresso.MensagemErro = "Erro ProcessAnunciosAsync - webexception";
+                //Progresso.MensagemErro = url + " / " + webex.Message + " / " + webex.StackTrace;
                 //WebResponse errResp = webex.Response;
                 //using (Stream respStream = errResp.GetResponseStream())
                 //{
@@ -613,15 +656,16 @@ namespace ControleDeLeiloes.Controllers
             }
             catch (Exception e)
             {
-                if (e.Message.ToString().IndexOf("error:(404)") > -1)
-                {
-                    Progresso.MensagemErro = url;
-                }
-                else
-                {
-                    Progresso.MensagemErro = url + " / " + e.Message + " / " + e.StackTrace;
-                }
-                throw;
+                Progresso.MensagemErro = "Erro ProcessAnunciosAsync";
+                //if (e.Message.ToString().IndexOf("error:(404)") > -1)
+                //{
+                //    Progresso.MensagemErro = url;
+                //}
+                //else
+                //{
+                //    Progresso.MensagemErro = url + " / " + e.Message + " / " + e.StackTrace;
+                //}
+                //throw;
             }
 
             return 0;
@@ -629,6 +673,9 @@ namespace ControleDeLeiloes.Controllers
 
         private async Task getDadosAnuncios(List<string> anuncios)
         {
+            Progresso.EtapaDados = 0;
+            Progresso.QuantidadeAnuncios = anuncios.Count();
+            Progresso.EtapaAnuncio = anuncios.Count();
             IEnumerable<Task<int>> downloadTasksQuery =
                from anuncio in anuncios
                select ProcessDadosAnunciosAsync(anuncio);
@@ -640,6 +687,19 @@ namespace ControleDeLeiloes.Controllers
                 Task<int> finishedTask = await Task.WhenAny(downloadTasks);
                 downloadTasks.Remove(finishedTask);
             }
+
+            //Task t = Task.WhenAll(downloadTasksQuery);
+            //try
+            //{
+            //    t.Wait();
+            //}
+            //catch { }
+
+            //if (t.Status == TaskStatus.RanToCompletion)
+            //    Progresso.MensagemErro = "Todas os dados processados com sucesso";
+            //else if (t.Status == TaskStatus.Faulted)
+            //    Progresso.MensagemErro = "Falha em alguns dados";
+
         }
 
         //processUrl  multi task
@@ -650,6 +710,7 @@ namespace ControleDeLeiloes.Controllers
                 var posicao1 = 0;
                 var tamanho = 0;
                 Anuncio anuncioUnico = new Anuncio();
+                Progresso.EtapaDados++;
 
                 //link
                 posicao1 = anuncio.IndexOf("canonical") + 17;
@@ -708,6 +769,7 @@ namespace ControleDeLeiloes.Controllers
                     //decrementa quantidade na barra de progresso
                     Progresso.QuantidadeAnuncios--;
                     Progresso.EtapaAnuncio--;
+                    Progresso.EtapaDados--;
                 }
                 else
                 {
@@ -888,7 +950,7 @@ namespace ControleDeLeiloes.Controllers
             }
             catch (Exception e)
             {
-                Progresso.MensagemErro = e.Message + e.StackTrace;
+                Progresso.MensagemErro = "Erro ProcessamentoDadosDoAnuncio"; //e.Message + e.StackTrace;
             }
 
             return 0;

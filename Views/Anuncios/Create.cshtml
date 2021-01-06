@@ -21,54 +21,53 @@
                 <p><a asp-action="Index">Voltar para lista de anuncios.</a></p>
             </div>
         </form>
-        <form action="#" class="form-horizontal">
-            <div class="form-group">
-                <label id="estagioBarra" class="col-lg-2 control-label"></label>
-                <div class="col-lg-10">
-                    <div id="divProgressbar">
-                        <div id="progressbar" class="progress-bar progress-bar-success"></div>
-                    </div>
+        <div>
+            <div class="col-lg-10">
+                <label id="estagioPaginas" class="col-lg-2 control-label"></label>
+                <div id="divPaginas">
+                    <div id="paginas" class="progress-bar progress-bar-success"></div>
                 </div>
             </div>
-            <div class="form-group">
-                <label id="estagioBarra2" class="col-lg-2 control-label"></label>
-                <div class="col-lg-10">
-                    <div id="divProgressbar2">
-                        <div id="progressbar2" class="progress-bar progress-bar-success"></div>
-                    </div>
+            <div class="col-lg-10">
+                <label id="estagioAnuncios" class="col-lg-2 control-label"></label>
+                <div id="divAnuncios">
+                    <div id="anuncios" class="progress-bar progress-bar-success"></div>
                 </div>
             </div>
-            <div class="form-group">
-                <label id="estagioBarra3" class="col-lg-2 control-label"></label>
-                <div class="col-lg-10">
-                    <div id="divProgressbar3">
-                        <div id="progressbar3" class="progress-bar progress-bar-success"></div>
-                    </div>
+            <div class="col-lg-10">
+                <label id="estagioDadosAnuncios" class="col-lg-2 control-label"></label>
+                <div id="divDadosAnuncios">
+                    <div id="dadosAnuncios" class="progress-bar progress-bar-success"></div>
                 </div>
             </div>
-            <div class="form-group">
-                <label id="msgErro" class="col-lg-2 control-label"></label>
+            <div class="col-lg-10">
+                <label id="quantidadeAnuncios" class="col-lg-6 control-label"></label>
             </div>
-            <div class="form-group">
-                <label id="estagioBarra4" class="col-lg-2 control-label"></label>
+            <div class="col-lg-10">
+                <label id="conclusao" class="col-lg-6 control-label"></label>
             </div>
-            <div class="form-group">
+            <div class="col-lg-10">
+                <label id="progresso" class="col-lg-6 control-label"></label>
+            </div>
+            <div class="col-lg-10">
+                <label id="msgErro" class="col-lg-8 control-label"></label>
+            </div>
+        </div>
+            <div class="col-lg-10">
                 <label>@ViewBag.AgoraTime</label>
             </div>
-            
-        </form>
+        </div>
     </div>
-</div>
 
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
 
-@section scripts
+    @section scripts
 {
 
-    <script type="text/javascript">
+        <script type="text/javascript">
 
         $(window).bind('beforeunload', function () {
             if (typeof timer != 'undefined') {
@@ -86,16 +85,25 @@
                 clearInterval(timer);
             }
 
-            document.getElementById("estagioBarra").innerHTML = "<label></label>";
-            $('#divProgressbar').attr("class", "");
-            $('#progressbar').attr("style", "");
-            $("#progressbar").html("");
+            document.getElementById("estagioPaginas").innerHTML = "<label></label>";
+            $('#divPaginas').attr("class", "");
+            $('#paginas').attr("style", "");
+            $("#paginas").html("");
 
-            document.getElementById("estagioBarra2").innerHTML = "<label></label>";
-            $('#divProgressbar2').attr("class", "");
-            $('#progressbar2').attr("style", "");
-            $("#progressbar2").html("");
-            document.getElementById("estagioBarra3").innerHTML = "<label></label>";
+            document.getElementById("estagioAnuncios").innerHTML = "<label></label>";
+            $('#divAnuncios').attr("class", "");
+            $('#anuncios').attr("style", "");
+            $("#anuncios").html("");
+
+            document.getElementById("estagioDadosAnuncios").innerHTML = "<label></label>";
+            $('#divDadosAnuncios').attr("class", "");
+            $('#dadosAnuncios').attr("style", "");
+            $("#dadosAnuncios").html("");
+
+            document.getElementById("quantidadeAnuncios").innerHTML = "<label></label>";
+            document.getElementById("conclusao").innerHTML = "<label></label>";
+            document.getElementById("progresso").innerHTML = "<label></label>";
+            document.getElementById("conclusao").innerHTML = "<label></label>";
             document.getElementById("msgErro").innerHTML = "<label></label>";
 
 
@@ -111,16 +119,25 @@
                 Atualizar()
             });
             function Atualizar() {
-                document.getElementById("estagioBarra").innerHTML = "<label></label>";
-                $('#divProgressbar').attr("class", "");
-                $('#progressbar').attr("style", "");
-                $("#progressbar").html("");
+                document.getElementById("estagioPaginas").innerHTML = "<label></label>";
+                $('#divPaginas').attr("class", "");
+                $('#paginas').attr("style", "");
+                $("#paginas").html("");
 
-                document.getElementById("estagioBarra2").innerHTML = "<label></label>";
-                $('#divProgressbar2').attr("class", "");
-                $('#progressbar2').attr("style", "");
-                $("#progressbar2").html("");
-                document.getElementById("estagioBarra3").innerHTML = "<label></label>";
+                document.getElementById("estagioAnuncios").innerHTML = "<label></label>";
+                $('#divAnuncios').attr("class", "");
+                $('#anuncios').attr("style", "");
+                $("#anuncios").html("");
+
+                document.getElementById("estagioDadosAnuncios").innerHTML = "<label></label>";
+                $('#divDadosAnuncios').attr("class", "");
+                $('#dadosAnuncios').attr("style", "");
+                $("#dadosAnuncios").html("");
+
+                document.getElementById("quantidadeAnuncios").innerHTML = "<label></label>";
+                document.getElementById("conclusao").innerHTML = "<label></label>";
+                document.getElementById("progresso").innerHTML = "<label></label>";
+                document.getElementById("conclusao").innerHTML = "<label></label>";
                 document.getElementById("msgErro").innerHTML = "<label></label>";
 
                 var urlPost = $('#urlOlx').val();
@@ -151,18 +168,18 @@
                     success: function (progresso) {
 
                         contador++;
-                        document.getElementById("estagioBarra4").innerHTML = "<label>" + contador +
+                        document.getElementById("progresso").innerHTML = "<label>" + contador +
                             "/EP" + progresso.etapaPagina + "/" + progresso.quantidadePaginas +
                             "/EA" + progresso.etapaAnuncio + "/" + progresso.quantidadeAnuncios + "</label>";
                         if (progresso.mensagemErro != null && progresso.mensagemErro != "") {
                             document.getElementById("msgErro").innerHTML = "<label>Menssagen de erro:" + progresso.mensagemErro;
                         }
                         if (progresso.etapaPagina > 0) {
-                            document.getElementById("estagioBarra").innerHTML = "<label>Páginas</label>";
-                            $('#divProgressbar').attr("class", "progress progress-striped");
-                            $('#progressbar').attr("aria-valuemax", progresso.quantidadePaginas);
-                            $('#progressbar').attr("style", "width: " + (progresso.etapaPagina / progresso.quantidadePaginas) * 100 + "%;");
-                            $("#progressbar").html(progresso.etapaPagina + "/" + progresso.quantidadePaginas);
+                            document.getElementById("estagioPaginas").innerHTML = "<label>Páginas</label>";
+                            $('#divPaginas').attr("class", "progress progress-striped");
+                            $('#paginas').attr("aria-valuemax", progresso.quantidadePaginas);
+                            $('#paginas').attr("style", "width: " + (progresso.etapaPagina / progresso.quantidadePaginas) * 100 + "%;");
+                            $("#paginas").html(progresso.etapaPagina + "/" + progresso.quantidadePaginas);
                             if (progresso.quantidadePaginas < progresso.etapaPagina) {
                                 if (ultimaAtualizacaoPagina[0] != progresso.etapaPagina) {
                                     ultimaAtualizacaoPagina[0] = progresso.etapaPagina;
@@ -180,66 +197,34 @@
                         }
 
                         if (progresso.etapaAnuncio > 0) {
-                            document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios</label>";
-                            $('#divProgressbar2').attr("class", "progress progress-striped");
-                            $('#progressbar2').attr("aria-valuemax", progresso.quantidadeAnuncios);
-                            $('#progressbar2').attr("style", "width: " + (progresso.etapaAnuncio / progresso.quantidadeAnuncios) * 100 + "%;");
-                            $("#progressbar2").html((Math.round((progresso.etapaAnuncio / progresso.quantidadeAnuncios) * 100)) + "%");
+                            document.getElementById("quantidadeAnuncios").innerHTML = "<label>Quantidade de Anuncios: " + progresso.quantidadeAnuncios + "</label>";
+                            document.getElementById("estagioAnuncios").innerHTML = "</p><label>Anuncios</label>";
+                            $('#divAnuncios').attr("class", "progress progress-striped");
+                            $('#anuncios').attr("aria-valuemax", progresso.quantidadeAnuncios);
+                            $('#anuncios').attr("style", "width: " + (progresso.etapaAnuncio / progresso.quantidadeAnuncios) * 100 + "%;");
+                            $("#anuncios").html((Math.round((progresso.etapaAnuncio / progresso.quantidadeAnuncios) * 100)) + "%");
                             if (progresso.quantidadeAnuncios != progresso.etapaAnuncio) {
                                 ultimaAtualizacaoAnuncio = (ultimaAtualizacaoAnuncio != progresso.etapaAnuncio) ? progresso.etapaAnuncio : ultimaAtualizacaoAnuncio;
                             }
-
                         }
-
-                        //if (!progresso.gravado && (progresso.etapa < progresso.quantidade || progresso.estagio == "Páginas")) {
-                        //if (progresso.etapa > 0 && progresso.estagio == "Páginas") {
-                        //    document.getElementById("estagioBarra").innerHTML = "<label>" + progresso.estagio + "</label>";
-                        //    $('#divProgressbar').attr("class", "progress progress-striped");
-                        //    $('#progressbar').attr("aria-valuemax", progresso.quantidade);
-                        //    $('#progressbar').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
-                        //    $("#progressbar").html(progresso.etapa + "/" + progresso.quantidade);
-                        //}
-                        //else if (progresso.estagio == "Anuncios") {
-                        //    document.getElementById("estagioBarra2").innerHTML = "<label>" + progresso.estagio + "</label>";
-                        //    $('#divProgressbar2').attr("class", "progress progress-striped");
-                        //    $('#progressbar2').attr("aria-valuemax", progresso.quantidade);
-                        //    $('#progressbar2').attr("style", "width: " + (progresso.etapa / progresso.quantidade) * 100 + "%;");
-                        //    $("#progressbar2").html(progresso.etapa + "/" + progresso.quantidade);
-                        //} else if (progresso.quantidade > 0) {
-                        //    clearInterval(timer)
-                        //};
-                        //}
-                        //else {
-
-
-                        //if (progresso.gravado) {
-                        //    if (progresso.quantidadePaginas > 0) {
-                        //        document.getElementById("estagioBarra").innerHTML = "<label>Páginas</label>";
-                        //        $('#divProgressbar').attr("class", "progress progress-striped");
-                        //        $('#progressbar').attr("style", "width: 100%;");
-                        //        $("#progressbar").html(progresso.quantidadePaginas + "/" + progresso.quantidadePaginas);
-                        //    }
-
-                        //    if (progresso.quantidadeAnuncios > 0) {
-                        //        document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios</label>";
-                        //        $('#divProgressbar2').attr("class", "progress progress-striped");
-                        //        $('#progressbar2').attr("style", "width: 100%;");
-                        //        $("#progressbar2").html(progresso.quantidadeAnuncios + "/" + progresso.quantidadeAnuncios);
-                        //        document.getElementById("estagioBarra3").innerHTML = "<label>Atualização concluída</label>";
-                        //    } else {
-                        //        //if (progresso.etapaAnuncio == 0 && document.getElementById("estagioBarra2").innerHTML == "<label>Anuncios</label>") {
-                        //        document.getElementById("estagioBarra3").innerHTML = "<label>Não há novos anuncios</label>";
-                        //        //}
-                        //    }
-                        //}
+                        if (progresso.etapaDados > 0) {
+                            document.getElementById("quantidadeAnuncios").innerHTML = "<label>Quantidade de Anuncios: " + progresso.quantidadeAnuncios + "</label>";
+                            document.getElementById("estagioDadosAnuncios").innerHTML = "<label>Dados</label>";
+                            $('#divDadosAnuncios').attr("class", "progress progress-striped");
+                            $('#dadosAnuncios').attr("aria-valuemax", progresso.quantidadeAnuncios);
+                            $('#dadosAnuncios').attr("style", "width: " + (progresso.etapaDados / progresso.quantidadeAnuncios) * 100 + "%;");
+                            $("#dadosAnuncios").html((Math.round((progresso.etapaDados / progresso.quantidadeAnuncios) * 100)) + "%");
+                            //$("#dadosAnuncios").html(progresso.etapaDados);
+                        }
                         if (progresso.etapaAnuncio == 0 && progresso.etapaPagina == 0) {
                             clearInterval(timer);
+                            document.getElementById("conclusao").innerHTML = "<label>Atualização concluída.";
                         }
                     }
                 });
             }
         });
 
-    </script>
+        </script>
 
-}
+    }

@@ -9,6 +9,7 @@ namespace ControleDeLeiloes.Models
     {
         public int EtapaPagina { get; set; }
         public int EtapaAnuncio { get; set; }
+        public int EtapaDados { get; set; }
         public int QuantidadePaginas { get; set; }
         public int QuantidadeAnuncios { get; set; }
         public string Estagio { get; set; }
