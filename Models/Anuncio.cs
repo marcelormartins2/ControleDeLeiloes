@@ -24,6 +24,7 @@ namespace ControleDeLeiloes.Models
         [DisplayName(displayName: "Valor Anunciado")]
         public double? VlAnunciado { get; set; }
         [DisplayName(displayName: "Valor Negociado")]
+        public string UF { get; set; }
         public string Bairro { get; set; }
         public string Telefone { get; set; }
         public string Vendedor { get; set; }

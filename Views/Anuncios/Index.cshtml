@@ -37,6 +37,19 @@
                                         {
                                             @Html.DropDownList("subcategoriaId")
                                         }
+                                        @*                                        @Html.DropDownList("uf", Html.GetEnumSelectList<UF>(), "UF")*@
+                                        @Html.DropDownList("uf", Model.Select(m => m.UF).Distinct().OrderBy(m => m).Select(m => new SelectListItem
+                                        {
+                                            Value = m,
+                                            Text = m,
+                                            Selected = "select" == m
+                                        }), "UF")
+                                        @Html.DropDownList("bairro", Model.Select(m => m.Bairro).Distinct().OrderBy(m => m).Select(m => new SelectListItem
+                                        {
+                                            Value = m,
+                                            Text = m,
+                                            Selected = "select" == m
+                                        }), "Bairro")
                                         @Html.CheckBox("olxPay") OlxPay
                                         @Html.CheckBox("olxDelivery") OlxEntrega
                                         <input type="submit" value="Filtrar" />
@@ -73,7 +86,7 @@
                                 </tfoot>
                                 <tbody>
                                     @foreach (var item in Model)
-                                    {
+                                        {
                                         <tr id='@item.Id'>
                                             <td>
                                                 <img src="@Url.Content(item.Img1)" alt="Image" style="height:200px;width:200px;" />

@@ -25,7 +25,7 @@ namespace ControleDeLeiloes.Controllers
             _context = context;
         }
 
-        static readonly HttpClient clienteHttp = new HttpClient();
+        private static readonly HttpClient clienteHttp = new HttpClient();
         static List<String> conteudoPaginas = new List<string>();
         static List<String> listaLinksAnuncios = new List<string>();
         static List<String> conteudoAnuncios = new List<string>();
@@ -53,13 +53,15 @@ namespace ControleDeLeiloes.Controllers
             return Json(Progresso);
         }
         // GET: Anuncios
-        public async Task<IActionResult> Index(bool verNotView, int? categoriaId, int? subcategoriaId, bool olxPay = true, bool olxDelivery = true)
+        public async Task<IActionResult> Index(bool verNotView, int? categoriaId, int? subcategoriaId, string uf, string bairro, bool olxPay = true, bool olxDelivery = true)
         {
             int tempCategoriaId = _context.CategoriaAnuncio.OrderBy(m => m.Nome).FirstOrDefault().Id;
             olxPay = olxDelivery == true ? true : olxPay;
             ViewData["verNotView"] = verNotView;
             ViewBag.olxPay = olxPay;
             ViewBag.olxDelivery = olxDelivery;
+            ViewBag.uf = new SelectList(_context.Anuncio.Select(m => m.UF).Distinct()).OrderBy(m => m);
+            ViewBag.bairro = new SelectList(_context.Anuncio.Select(m => m.Bairro).Distinct()).OrderBy(m => m);
             if (categoriaId > 0)
             {
                 ViewBag.categoriaId = new SelectList(_context.CategoriaAnuncio.OrderBy(m => m.Nome), "Id", "Nome", categoriaId);
@@ -78,71 +80,44 @@ namespace ControleDeLeiloes.Controllers
                 ViewBag.subcategoriaId = new SelectList(_context.SubcategoriaAnuncio.Where(m => m.CategoriaAnuncioId == tempCategoriaId).OrderBy(m => m.Nome), "Id", "Nome");
             }
 
+
+            //cria consulta
+            var tempAnuncio = _context.Anuncio.Include(m => m.SubcategoriaAnuncio).Where(
+                    m => m.OlxPay == olxPay
+                    && m.OlxDelivery == olxDelivery
+                    && m.NotView == verNotView).AsNoTracking();
+            if (uf != "" && uf != null)
+            {
+                tempAnuncio = tempAnuncio.Where(m => m.UF == uf);
+            }
+            if (bairro != "" && bairro != null)
+            {
+                tempAnuncio = tempAnuncio.Where(m => m.Bairro == bairro);
+            }
             if ((categoriaId == null || categoriaId == 0) && (subcategoriaId == null || subcategoriaId == 0))
             {
-                var tempAnuncio = await _context.Anuncio
-                    .Include(m => m.SubcategoriaAnuncio)
-                    .Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == tempCategoriaId
-                    && m.OlxPay == olxPay
-                    && m.OlxDelivery == olxDelivery
-                    && m.NotView == verNotView)
-                    .AsNoTracking()
-                    .ToListAsync();
+                tempAnuncio = tempAnuncio.Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == tempCategoriaId);
                 ViewData["subCategoriaEmpty"] = true;
-                //var anuncio = await _context.Anuncio.Include(b=>b.SubcategoriaAnuncio).Where(m =>
-                //    m.NotView == verNotView &&
-                //    m.OlxPay == olxPay &&
-                //    m.OlxDelivery == olxDelivery &&
-                //    m.SubcategoriaAnuncio.CategoriaAnuncioId.Equals(2)).AsNoTracking().ToListAsync();
-                //anuncio.Where("SubcategoriaAnuncio.CategoriaAnuncioId == tempCategoriaId").ToList();
-                return View(tempAnuncio);
             }
             else if (categoriaId != null && categoriaId != 0)
             {
                 if (subcategoriaId != null && subcategoriaId != 0)
                 {
-                    var tempAnuncio = await _context.Anuncio
-                        .Where(m => m.SubcategoriaAnuncioId == subcategoriaId
-                        && m.OlxPay == olxPay
-                        && m.OlxDelivery == olxDelivery
-                        && m.NotView == verNotView)
-                        .AsNoTracking()
-                        .ToListAsync();
+                    tempAnuncio = tempAnuncio.Where(m => m.SubcategoriaAnuncioId == subcategoriaId);
                     ViewData["subCategoriaEmpty"] = false;
-                    return View(tempAnuncio);
                 }
                 else
                 {
-                    var tempanuncio = await _context.Anuncio
-                        .Include(m => m.SubcategoriaAnuncio)
-                        .Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == categoriaId
-                        && m.OlxPay == olxPay
-                        && m.OlxDelivery == olxDelivery
-                        && m.NotView == verNotView)
-                        .AsNoTracking()
-                        .ToListAsync();
+                    tempAnuncio = tempAnuncio.Where(m => m.SubcategoriaAnuncio.CategoriaAnuncioId == categoriaId);
                     ViewData["subCategoriaEmpty"] = true;
-                    return View(tempanuncio);
-                    //m.NotView == verNotView &&
-                    //m.OlxPay == olxPay &&
-                    //m.OlxDelivery == olxDelivery //&&
-                    //                             //m.CategoriaAnuncioId == categoria
-                    //);.ToListAsync());
                 }
             }
             else
             {
-                var tempAnuncio = await _context.Anuncio
-                    .Where(m => m.SubcategoriaAnuncioId == subcategoriaId
-                    && m.OlxPay == olxPay
-                    && m.OlxDelivery == olxDelivery
-                    && m.NotView == verNotView)
-                    .AsNoTracking()
-                    .ToListAsync();
+                tempAnuncio = tempAnuncio.Where(m => m.SubcategoriaAnuncioId == subcategoriaId);
                 ViewData["subCategoriaEmpty"] = false;
-                return View(tempAnuncio);
             }
-
+            return View(await tempAnuncio.ToListAsync());
         }
         //POST: Atualizar NotView em anuncio
         public async Task<bool> UpdateNotView(bool notView, int id)
@@ -542,8 +517,8 @@ namespace ControleDeLeiloes.Controllers
         //getPaginas multi task
         private async Task getPaginas(List<string> listPaginas)
         {
-            ServicePointManager.DefaultConnectionLimit = 100;
-            
+            ServicePointManager.DefaultConnectionLimit = 10;
+
             IEnumerable<Task<int>> downloadTasksQuery =
                from url in listPaginas
                select ProcessUrlAsync(url);
@@ -570,9 +545,9 @@ namespace ControleDeLeiloes.Controllers
             //    Progresso.MensagemErro = "Falha em algumas páginas";        
         }
 
-            //processUrl das páginas multi task
+        //processUrl das páginas multi task
 
-            private async Task<int> ProcessUrlAsync(string url)
+        private async Task<int> ProcessUrlAsync(string url)
         {
             //atraso para não dar erro 503 de limete de solicitações no site
             Thread.Sleep(50);
@@ -601,35 +576,24 @@ namespace ControleDeLeiloes.Controllers
         private async Task getAnuncios(List<string> links)
         {
             Progresso.EtapaAnuncio = 0;
-            IEnumerable<Task<int>> downloadTasksQuery =
+
+            IEnumerable<Task> downloadTasksQuery =
                from url in links
                select ProcessAnunciosAsync(url);
 
-            List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
+            List<Task> downloadTasks = downloadTasksQuery.ToList();
 
             while (downloadTasks.Any())
             {
-                Task<int> finishedTask = await Task.WhenAny(downloadTasks);
+                Task finishedTask = await Task.WhenAny(downloadTasks);
+                Progresso.MensagemErro = conteudoAnuncios.Count().ToString();
                 downloadTasks.Remove(finishedTask);
             }
-
-
-            //Task t2 = Task.WhenAll(downloadTasksQuery);
-            //try
-            //{
-            //    t2.Wait();
-            //}
-            //catch { }
-
-            //if (t2.Status == TaskStatus.RanToCompletion)
-            //    Progresso.MensagemErro = "Todas os anuncios processados com sucesso";
-            //else if (t2.Status == TaskStatus.Faulted)
-            //    Progresso.MensagemErro = "Falha em alguns anuncios";
-
+            //downloadTasks.Clear();
         }
 
         //processUrl  multi task
-        private async Task<int> ProcessAnunciosAsync(string url)
+        private async Task ProcessAnunciosAsync(string url)
         {
             try
             {
@@ -638,8 +602,8 @@ namespace ControleDeLeiloes.Controllers
                 //acessr pagina do anuncio
                 if (url.Length < 2083)
                 {
-                    Progresso.EtapaAnuncio++;
                     var resposta = await clienteHttp.GetStringAsync(url);
+                    Progresso.EtapaAnuncio++;
                     conteudoAnuncios.Add(resposta);
                 }
             }
@@ -667,8 +631,6 @@ namespace ControleDeLeiloes.Controllers
                 //}
                 //throw;
             }
-
-            return 0;
         }
 
         private async Task getDadosAnuncios(List<string> anuncios)
@@ -676,15 +638,15 @@ namespace ControleDeLeiloes.Controllers
             Progresso.EtapaDados = 0;
             Progresso.QuantidadeAnuncios = anuncios.Count();
             Progresso.EtapaAnuncio = anuncios.Count();
-            IEnumerable<Task<int>> downloadTasksQuery =
+            IEnumerable<Task> downloadTasksQuery =
                from anuncio in anuncios
-               select ProcessDadosAnunciosAsync(anuncio);
+               select Task.Run(() => ProcessDadosAnunciosAsync(anuncio));
 
-            List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
+            List<Task> downloadTasks = downloadTasksQuery.ToList();
 
             while (downloadTasks.Any())
             {
-                Task<int> finishedTask = await Task.WhenAny(downloadTasks);
+                Task finishedTask = await Task.WhenAny(downloadTasks);
                 downloadTasks.Remove(finishedTask);
             }
 
@@ -703,7 +665,7 @@ namespace ControleDeLeiloes.Controllers
         }
 
         //processUrl  multi task
-        private async Task<int> ProcessDadosAnunciosAsync(string anuncio)
+        private Task ProcessDadosAnunciosAsync(string anuncio)
         {
             try
             {
@@ -885,6 +847,11 @@ namespace ControleDeLeiloes.Controllers
                         {
                             anuncioUnico.VlAnunciado = Int32.Parse(anuncio.Substring(posicao1, tamanho));
                         }
+                        //UF
+                        if (anuncioUnico.Link.Length > 0)
+                        {
+                            anuncioUnico.UF = anuncioUnico.Link.Substring(8, 2).ToUpper();
+                        }
                         //bairro
                         posicao1 = anuncio.IndexOf("Bairro<");
                         if (posicao1 > 0)
@@ -953,7 +920,7 @@ namespace ControleDeLeiloes.Controllers
                 Progresso.MensagemErro = "Erro ProcessamentoDadosDoAnuncio"; //e.Message + e.StackTrace;
             }
 
-            return 0;
+            return null;
         }
     }
 }
