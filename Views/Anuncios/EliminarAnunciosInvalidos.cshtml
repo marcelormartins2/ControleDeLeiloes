@@ -63,9 +63,6 @@
                 clearInterval(timer);
             }
 
-            //timer = setInterval(function () {
-            //    GetProgresso(timer);
-            //}, 500);
 
             $('#btnDeletarAnunciosInvalidos').on('click', function () {
 
@@ -108,7 +105,7 @@
                         if (progresso.registrosBDApagados > 0) {
                             document.getElementById("estagioBarra2").innerHTML = "<label>Anuncios&nbsp;deletados&nbsp;=&nbsp;" + progresso.registrosBDApagados + "</label>";
                         }
-                        if (progresso.registrosBDAnalisados == progresso.registrosBD || contador > 10000) {
+                        if (progresso.registrosBD == 0 || progresso.registrosBDAnalisados == progresso.registrosBD || contador > 10000) {
                             clearInterval(timer);
                             document.getElementById("estagioBarra3").innerHTML = "<label>Registros&nbsp;apagados&nbsp;=&nbsp;" + progresso.registrosBDApagados + "</label>";
                         } else

@@ -41,7 +41,7 @@ namespace ControleDeLeiloes.Controllers
         static int lastSubcategoriaAnuncioId = 0;
         static Task taskTemp;
         //ProgressBar
-        private static Progresso Progresso = new Progresso { RegistrosBDAnalisados = -1 };
+        private static Progresso Progresso = new Progresso { RegistrosBD = -1 };
         public JsonResult GetProgresso()
         {
             return Json(Progresso);
@@ -167,54 +167,62 @@ namespace ControleDeLeiloes.Controllers
         //}
         public async Task<bool> DeletarInvalidos()
         {
-            List<Anuncio> listAnuncios = await _context.Anuncio.ToListAsync();
-
-            Progresso.RegistrosBD = listAnuncios.Count();
-            Progresso.RegistrosBDApagados = 0;
-            Progresso.RegistrosBDAnalisados = 0;
-
-            WebResponse resposta = null;
-
-            foreach (Anuncio item in listAnuncios)
+            if (Progresso.RegistrosBD < 1)
             {
-                //Verifica se os anuncios estão ativos
-                try
-                {
-                    WebRequest requisicaoWeb = WebRequest.Create(item.Link);
+                ServicePointManager.DefaultConnectionLimit = 10;
+                List<string> listAnuncios = await _context.Anuncio.Select(c => c.Link).ToListAsync();
+                Progresso.RegistrosBD = listAnuncios.Count();
+                Progresso.RegistrosBDApagados = 0;
+                Progresso.RegistrosBDAnalisados = 0;
 
-                    requisicaoWeb.Method = "HEAD";
-                    //requisicaoWeb.UserAgent = "RequisicaoWebDemo";
+                IEnumerable<Task<int>> downloadTasksQuery =
+                   from url in listAnuncios
+                   select ProcessDeletarInvalidos(url);
 
-                    resposta = await requisicaoWeb.GetResponseAsync();
-                    resposta.Close();
-                }
-                catch (WebException e)
+
+                List<Task<int>> downloadTasks = downloadTasksQuery.ToList();
+
+                while (downloadTasks.Any())
                 {
-                    if (e.Message.ToString() == "The remote server returned an error: (404) Not Found.")
-                    {
-                        Progresso.RegistrosBDApagados++;
-                        var anuncioDeletar = await _context.Anuncio.FindAsync(item.Id);
-                        _context.Anuncio.Remove(anuncioDeletar);
-                        await _context.SaveChangesAsync();
-                    }
+                    Task<int> finishedTask = await Task.WhenAny(downloadTasks);
+                    downloadTasks.Remove(finishedTask);
                 }
-                finally
-                {
-                    if (resposta != null)
-                    {
-                        resposta.Close();
-                    }
-                }
-                Progresso.RegistrosBDAnalisados++;
+                Progresso.RegistrosBD = 0;
             }
-            //Progresso.RegistrosBD = 0;
             return true;
         }
-        // GET: Anuncios/Create
-        public IActionResult Create()
+        private async Task<int> ProcessDeletarInvalidos(string url)
         {
-            ViewData["AgoraTime"] = DateTime.Now;
-            return View();
+            //atraso para não dar erro 503 de limete de solicitações no site
+            Thread.Sleep(50);
+
+            //WebResponse resposta = null;
+            try
+            {
+                var resposta = await clienteHttp.GetAsync(url);
+                Progresso.RegistrosBDAnalisados++;
+                if (resposta.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Progresso.RegistrosBDApagados++;
+                    var anuncioDeletar = await _context.Anuncio.Where(c => c.Link == url).FirstOrDefaultAsync();
+                    _context.Anuncio.Remove(anuncioDeletar);
+                    await _context.SaveChangesAsync();
+                }
+
+                //WebRequest requisicaoWeb = WebRequest.Create(url);
+
+                //requisicaoWeb.Method = "HEAD";
+                ////requisicaoWeb.UserAgent = "RequisicaoWebDemo";
+
+                //resposta = await requisicaoWeb.GetResponseAsync();
+                //resposta.Close();
+            }
+            catch (WebException e)
+            {
+                Progresso.MensagemErro = e.Message.ToString();
+            }
+
+            return 0;
         }
         //Atualizar anuncios
         public async Task<bool> AtualizarAnuncios(String urlOlx, int numPaginas)
@@ -409,112 +417,6 @@ namespace ControleDeLeiloes.Controllers
             }
             return true;
         }
-
-
-
-        // GET: Anuncios/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var anuncio = await _context.Anuncio
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (anuncio == null)
-            {
-                return NotFound();
-            }
-
-            return View(anuncio);
-        }
-        // GET: Anuncios/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var anuncio = await _context.Anuncio.FindAsync(id);
-            if (anuncio == null)
-            {
-                return NotFound();
-            }
-            return View(anuncio);
-        }
-
-        // POST: Anuncios/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,IdAnuncio,Link,DtPublicacao,Img1,Img2,Img3,Descricao,VlAnunciado,Bairro,Telefone,Vendedor,IdVendedor,DtVendedorDesde")] Anuncio anuncio)
-        {
-            if (id != anuncio.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(anuncio);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AnuncioExists(anuncio.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(anuncio);
-        }
-
-        // GET: Anuncios/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var anuncio = await _context.Anuncio
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (anuncio == null)
-            {
-                return NotFound();
-            }
-
-            return View(anuncio);
-        }
-
-        // POST: Anuncios/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var anuncio = await _context.Anuncio.FindAsync(id);
-            _context.Anuncio.Remove(anuncio);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool AnuncioExists(int id)
-        {
-            return _context.Anuncio.Any(e => e.Id == id);
-        }
-
-        //getPaginas multi task
         private async Task getPaginas(List<string> listPaginas)
         {
             ServicePointManager.DefaultConnectionLimit = 10;
@@ -531,22 +433,8 @@ namespace ControleDeLeiloes.Controllers
                 Task<int> finishedTask = await Task.WhenAny(downloadTasks);
                 downloadTasks.Remove(finishedTask);
             }
-
-            //Task t = Task.WhenAll(downloadTasksQuery);
-            //try
-            //{
-            //    t.Wait();
-            //}
-            //catch { }
-
-            //if (t.Status == TaskStatus.RanToCompletion)
-            //    Progresso.MensagemErro = "Todas as páginas processadas com sucesso";
-            //else if (t.Status == TaskStatus.Faulted)
-            //    Progresso.MensagemErro = "Falha em algumas páginas";        
         }
-
         //processUrl das páginas multi task
-
         private async Task<int> ProcessUrlAsync(string url)
         {
             //atraso para não dar erro 503 de limete de solicitações no site
@@ -571,7 +459,6 @@ namespace ControleDeLeiloes.Controllers
             }
             return 0;
         }
-
         //getAnuncios multi task
         private async Task getAnuncios(List<string> links)
         {
@@ -591,7 +478,6 @@ namespace ControleDeLeiloes.Controllers
             }
             //downloadTasks.Clear();
         }
-
         //processUrl  multi task
         private async Task ProcessAnunciosAsync(string url)
         {
@@ -632,7 +518,6 @@ namespace ControleDeLeiloes.Controllers
                 //throw;
             }
         }
-
         private async Task getDadosAnuncios(List<string> anuncios)
         {
             Progresso.EtapaDados = 0;
@@ -663,7 +548,6 @@ namespace ControleDeLeiloes.Controllers
             //    Progresso.MensagemErro = "Falha em alguns dados";
 
         }
-
         //processUrl  multi task
         private Task ProcessDadosAnunciosAsync(string anuncio)
         {
@@ -922,5 +806,109 @@ namespace ControleDeLeiloes.Controllers
 
             return null;
         }
+        // GET: Anuncios/Create
+        public IActionResult Create()
+        {
+            ViewData["AgoraTime"] = DateTime.Now;
+            return View();
+        }
+        // GET: Anuncios/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var anuncio = await _context.Anuncio
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (anuncio == null)
+            {
+                return NotFound();
+            }
+
+            return View(anuncio);
+        }
+        // GET: Anuncios/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var anuncio = await _context.Anuncio.FindAsync(id);
+            if (anuncio == null)
+            {
+                return NotFound();
+            }
+            return View(anuncio);
+        }
+        // POST: Anuncios/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,IdAnuncio,Link,DtPublicacao,Img1,Img2,Img3,Descricao,VlAnunciado,Bairro,Telefone,Vendedor,IdVendedor,DtVendedorDesde")] Anuncio anuncio)
+        {
+            if (id != anuncio.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(anuncio);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!AnuncioExists(anuncio.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(anuncio);
+        }
+        // GET: Anuncios/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var anuncio = await _context.Anuncio
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (anuncio == null)
+            {
+                return NotFound();
+            }
+
+            return View(anuncio);
+        }
+        // POST: Anuncios/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var anuncio = await _context.Anuncio.FindAsync(id);
+            _context.Anuncio.Remove(anuncio);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+        private bool AnuncioExists(int id)
+        {
+            return _context.Anuncio.Any(e => e.Id == id);
+        }
+        //getPaginas multi task
     }
 }
