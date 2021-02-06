@@ -1,74 +1,86 @@
 ﻿@model ControleDeLeiloes.Models.Produto
 
-<dl class="dl-horizontal">
-    <dt>
-        Data:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.Data)
-    </dd>
-    <dt>
-        Descrição:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.Descricao)
-    </dd>
-    <dt>
-        Valor Anunciado:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.VlAnunciado)
-    </dd>
-    <dt>
-        Valor Negociado:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.VlNegociado)
-    </dd>
-    <dt>
-        Valor Pago:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.VlCompra)
-    </dd>
-    <dt>
-        Valor Venda:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.VlVenda)
-    </dd>
-    <dt>
-        Bairro:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.Bairro)
-    </dd>
-    <dt>
-        Endereço:
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.Endereco)
-    </dd>
-    <dt>
-        Localização:
-    </dt>
-    <dd>
-        @if (!(Model.Localizacao == null))
-        {
-            <a href='@Model.Localizacao' target="_blank">
-                @Model.Localizacao
-            </a>
-        }
-    </dd>
-    <dt>
-        Anuncio:
-    </dt>
-    <dd>
-        @if (!(Model.Anuncio == null))
-        {
-            <a href='@Model.Anuncio' target="_blank">
-                @Model.Anuncio
-            </a>
-        }
-    </dd>
-</dl>
+    <dl class="dl-horizontal">
+        <dt>
+            Data Cadastro:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DataCadastro)
+        </dd>
+        <dt>
+            Data Anuncio:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DataAnuncio)
+        </dd>
+        <dt>
+            Data Titulo:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Titulo)
+        </dd>
+        <dt>
+            Descrição:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Descricao)
+        </dd>
+        <dt>
+            Valor Anunciado:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlAnunciado)
+        </dd>
+        <dt>
+            Valor Negociado:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlNegociado)
+        </dd>
+        <dt>
+            Valor Pago:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlCompra)
+        </dd>
+        <dt>
+            Valor Venda:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.VlVenda)
+        </dd>
+        <dt>
+            Bairro:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Bairro)
+        </dd>
+        <dt>
+            Endereço:
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Endereco)
+        </dd>
+        <dt>
+            Localização:
+        </dt>
+        <dd>
+            @if (!(Model.Localizacao == null))
+            {
+                <a href='@Model.Localizacao' target="_blank">
+                    @Model.Localizacao
+                </a>
+            }
+        </dd>
+        <dt>
+            Anuncio:
+        </dt>
+        <dd>
+            @if (!(Model.Anuncio == null))
+            {
+                <a href='@Model.Anuncio' target="_blank">
+                    @Model.Anuncio
+                </a>
+            }
+        </dd>
+    </dl>

@@ -9,7 +9,9 @@ namespace ControleDeLeiloes.Configuration
     {
         public static IServiceCollection AddMvcAndRazor(this IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddMvc(options => 
+                            options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute())
+                            ).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages();
             services.AddControllers(config =>

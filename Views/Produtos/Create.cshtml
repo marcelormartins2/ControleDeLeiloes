@@ -4,24 +4,25 @@
     ViewData["Title"] = "Incluir";
 }
 
-<h2>Incluir</h2>
+<h2>Incluir Produto</h2>
+Importar Produtos: <a asp-action="ImportarBsb">BsbLeilões</a> | <a asp-action="ImportarParque">Parque</a>
 
-<h4>Produto</h4>
+
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="form-group">
-                <label class="control-label">Anuncio</label>
-                <input type="text" id="linkAnuncio" class="form-control" />
-                <input type="date" id="Data2" class="form-control" />
-            </div>
+            @*<div class="form-group">
+                    <label class="control-label">Anuncio</label>
+                    <input type="text" id="linkAnuncio" class="form-control" />
+                    <input type="date" id="Data2" class="form-control" />
+                </div>
 
-            <div class="form-group">
-                <input type="button" id="btnBuscarAnuncio" value="Buscar Anuncio" class="btn btn-success" onclick="BuscarAnuncio()" />
-            </div>
+                <div class="form-group">
+                    <input type="button" id="btnBuscarAnuncio" value="Buscar Anuncio" class="btn btn-success" onclick="BuscarAnuncio()" />
+                </div>*@
 
             <partial name="_edit_create" />
 
@@ -51,7 +52,7 @@
                     dataType: "json",
                     type: "GET",
                     url: "/Produtos/BuscarAnuncio",
-                    data: { link : anuncio},
+                    data: { link: anuncio },
                     success: function (dados) {
                         var objDados = jQuery.parseJSON(dados);
                         var now = new Date();

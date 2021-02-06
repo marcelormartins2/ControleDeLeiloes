@@ -7,14 +7,18 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ControleDeLeiloes.Controllers
 {
+
     public class ProdutosController : Controller
     {
 
+        private static readonly HttpClient clienteHttp = new HttpClient();
+        //private static readonly HttpClientHandler handler = new HttpClientHandler( HttpClient();
         private readonly ControleDeLeiloesDbContext _context;
         private readonly UserManager<Usuario> _userManager;
         private readonly SignInManager<Usuario> _signInManager;
@@ -39,7 +43,28 @@ namespace ControleDeLeiloes.Controllers
                 .ToListAsync();
             return View(await produto);
         }
+        public async Task<IActionResult> ImportarBsb()
+        {
+            //Buscar dados do site BSBLeilões
 
+            //try
+            //{
+            //    var resposta = await clienteHttp.GetStringAsync("https://www.bsbleiloes.com.br/arrematante/minhas-arrematacoes");
+            //    conteudoPaginas.Add(resposta);
+            //    if (Progresso.EtapaPagina < qntPaginas)
+            //    {
+            //        Progresso.EtapaPagina++;
+            //    }
+            //}
+            //catch (WebException e)
+            //{
+            //    Progresso.MensagemErro = "Erro ProcessUrlAsync";
+            //    //Progresso.MensagemErro = e.Message + " //StackTrace// " + e.StackTrace;
+            //}
+
+
+            return View();
+        }
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -58,8 +83,34 @@ namespace ControleDeLeiloes.Controllers
         }
 
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create(int? id)
         {
+            if (id>0)
+            {
+                Anuncio anuncio = await _context.Anuncio.FirstOrDefaultAsync(m => m.Id == id);
+                Produto produto = new Produto();
+
+                produto.Titulo = anuncio.Titulo;
+                produto.Anuncio = anuncio.Link;
+                produto.Bairro = anuncio.Bairro;
+                produto.DataCadastro = DateTime.Now;
+                produto.Descricao = anuncio.Descricao;
+                produto.Endereco = anuncio.UF;
+                produto.Telefone = anuncio.Telefone;
+                produto.Vendedor = anuncio.Vendedor;
+                produto.VlAnunciado = anuncio.VlAnunciado;
+
+                //Busca o último Id
+                Produto ultimoProduto = await _context.Produto.OrderByDescending(o => o.Id).FirstOrDefaultAsync();
+                produto.Id = (ultimoProduto != null) ? ultimoProduto.Id + 1 : 1;
+
+                var user = await _userManager.FindByNameAsync(User.Identity.Name);
+                produto.Usuario = user;
+                _context.Add(produto);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Index");
+            }
             return View();
         }
 

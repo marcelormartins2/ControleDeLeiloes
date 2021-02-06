@@ -39,7 +39,7 @@ namespace ControleDeLeiloes.Controllers
         static int lastId = 0;
         static int lastCategoriaAnuncioId = 0;
         static int lastSubcategoriaAnuncioId = 0;
-        static Task taskTemp;
+
         //ProgressBar
         private static Progresso Progresso = new Progresso { RegistrosBD = -1 };
         public JsonResult GetProgresso()
@@ -170,7 +170,7 @@ namespace ControleDeLeiloes.Controllers
             if (Progresso.RegistrosBD < 1)
             {
                 ServicePointManager.DefaultConnectionLimit = 10;
-                List<string> listAnuncios = await _context.Anuncio.Select(c => c.Link).ToListAsync();
+                List<string> listAnuncios = await _context.Anuncio.OrderBy(c => c.DtPublicacao).Select(c => c.Link).ToListAsync();
                 Progresso.RegistrosBD = listAnuncios.Count();
                 Progresso.RegistrosBDApagados = 0;
                 Progresso.RegistrosBDAnalisados = 0;
@@ -442,15 +442,12 @@ namespace ControleDeLeiloes.Controllers
 
             try
             {
-
                 var resposta = await clienteHttp.GetStringAsync(url);
-
                 conteudoPaginas.Add(resposta);
                 if (Progresso.EtapaPagina < qntPaginas)
                 {
                     Progresso.EtapaPagina++;
                 }
-
             }
             catch (WebException e)
             {

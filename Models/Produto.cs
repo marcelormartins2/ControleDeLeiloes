@@ -8,9 +8,12 @@ namespace ControleDeLeiloes.Models
     public class Produto
     {
         public int Id { get; set; }
+        public string Titulo { get; set; }
         public string Descricao { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yy}")]
-        public DateTime Data { get; set; }
+        public DateTime DataCadastro { get; set; }
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yy}")]
+        public DateTime DataAnuncio { get; set; }
         [DisplayName(displayName: "Valor Anunciado")]
         public double? VlAnunciado { get; set; }
         [DisplayName(displayName: "Valor Negociado")]
