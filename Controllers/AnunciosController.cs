@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace ControleDeLeiloes.Controllers
 {
@@ -53,15 +53,19 @@ namespace ControleDeLeiloes.Controllers
             return Json(Progresso);
         }
         // GET: Anuncios
-        public async Task<IActionResult> Index(bool verNotView, int? categoriaId, int? subcategoriaId, string uf, string bairro, bool olxPay = true, bool olxDelivery = true)
+        public async Task<IActionResult> Index(int? pagina, bool verNotView, int? categoriaId, int? subcategoriaId, string uf, string bairro, bool olxPay, bool olxDelivery, int? vlrMin, int? vlrMax, string txtBusca)
         {
+            const int itensPorPagina = 100;
+            int numeroPagina = (pagina ?? 1); //se pagina for null
             int tempCategoriaId = _context.CategoriaAnuncio.OrderBy(m => m.Nome).FirstOrDefault().Id;
             olxPay = olxDelivery == true ? true : olxPay;
             ViewData["verNotView"] = verNotView;
             ViewBag.olxPay = olxPay;
             ViewBag.olxDelivery = olxDelivery;
             ViewBag.uf = new SelectList(_context.Anuncio.Select(m => m.UF).Distinct()).OrderBy(m => m);
+            ViewData["ufAtual"] = uf;
             ViewBag.bairro = new SelectList(_context.Anuncio.Select(m => m.Bairro).Distinct()).OrderBy(m => m);
+            ViewData["bairroAtual"] = bairro;
             if (categoriaId > 0)
             {
                 ViewBag.categoriaId = new SelectList(_context.CategoriaAnuncio.OrderBy(m => m.Nome), "Id", "Nome", categoriaId);
@@ -117,7 +121,19 @@ namespace ControleDeLeiloes.Controllers
                 tempAnuncio = tempAnuncio.Where(m => m.SubcategoriaAnuncioId == subcategoriaId);
                 ViewData["subCategoriaEmpty"] = false;
             }
-            return View(await tempAnuncio.ToListAsync());
+            if (vlrMin > 0)
+            {
+                tempAnuncio = tempAnuncio.Where(m => m.VlAnunciado > vlrMin);
+            }
+            if (vlrMax > 0)
+            {
+                tempAnuncio = tempAnuncio.Where(m => m.VlAnunciado < vlrMax);
+            }
+            if (txtBusca != "" && txtBusca != null)
+            {
+                tempAnuncio = tempAnuncio.Where(m => m.Titulo.Contains(txtBusca));
+            }
+            return View(await tempAnuncio.ToPagedListAsync(numeroPagina, itensPorPagina));
         }
         //POST: Atualizar NotView em anuncio
         public async Task<bool> UpdateNotView(bool notView, int id)
