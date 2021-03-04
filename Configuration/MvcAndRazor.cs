@@ -9,9 +9,11 @@ namespace ControleDeLeiloes.Configuration
     {
         public static IServiceCollection AddMvcAndRazor(this IServiceCollection services)
         {
-            services.AddMvc(options => 
-                            options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute())
-                            ).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            // Não deu certo, pois atrapalho as requisições ajax do avatar e do index.cstml de anuncios
+            //services.AddMvc(options => 
+            //                options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute())
+            //                ).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages();
             services.AddControllers(config =>
