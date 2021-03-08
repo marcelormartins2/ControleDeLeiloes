@@ -4,12 +4,12 @@
     ViewData["Title"] = "Deletar";
 }
 
-<h2>Deletar</h2>
-
-<div class="panel panel-default panel-controls">
-    <div>
-        <h4>Leiloeiro</h4>
-        <h4>Você tem certeza que quer deletar este Leilão?</h4>
+<div class="panel panel-default plain">
+    <div class="panel-heading blue-light-bg">
+        <h4 class="panel-title">Leilão: @Html.DisplayFor(model => model.Descricao)</h4>
+        <h4>Você tem certeza que deseja deletar este Leilão?</h4>
+    </div>
+    <div class="panel-body">
 
         <partial name="_details_delete" />
 
@@ -18,7 +18,7 @@
 <div>
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-success" /> |
+        <input type="submit" value="Deletar" class="btn btn-success" /> |
         <a asp-action="Index">Voltar para lista</a>
     </form>
 </div>

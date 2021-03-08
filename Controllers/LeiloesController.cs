@@ -6,48 +6,22 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
 namespace ControleDeLeiloes.Controllers
 {
     public class LeiloesController : Controller
     {
         private readonly ControleDeLeiloesDbContext _context;
-
-        public LeiloesController(ControleDeLeiloesDbContext context)
-        {
-            _context = context;
-        }
-
+        public LeiloesController(ControleDeLeiloesDbContext context){_context = context;}
         public async Task<IActionResult> Index()
         {
             var leilao = _context.Leilao.Include(m => m.Leiloeiro).ToListAsync();
             return View(await leilao);
         }
-
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var leilao = await _context.Leilao
-                .Include(m=> m.Leiloeiro)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (leilao == null)
-            {
-                return NotFound();
-            }
-
-            return View(leilao);
-        }
-
         public IActionResult Create()
         {
             ViewData["leiloeiros"] = new SelectList(_context.Leiloeiro, "Id", "Nome");
             return View();
         }
-
         // POST: Leiloes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -61,8 +35,23 @@ namespace ControleDeLeiloes.Controllers
             }
             return View(leilao);
         }
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) { return NotFound(); }
 
-        // GET: Leiloes/Edit/5
+            var leilao = await _context.Leilao
+                .Include(m => m.Leiloeiro)
+                .Include(m => m.Lote)
+                .ThenInclude(m => m.Produto)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (leilao == null)
+            {
+                return NotFound();
+            }
+
+            return View(leilao);
+        }
+        // GET: Leiloes/Edit
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)

@@ -49,7 +49,7 @@ namespace ControleDeLeiloes.Controllers
 
         public IActionResult Create()
         {
-            ViewData["produtos"] = new SelectList(_context.Produto, "Id", "Descricao");
+            ViewData["produtos"] = new SelectList(_context.Produto, "Id", "Titulo");
             ViewData["leiloes"] = new SelectList(_context.Leilao, "Id", "Descricao");
             return View();
         }
@@ -63,7 +63,7 @@ namespace ControleDeLeiloes.Controllers
             {
                 _context.Add(Lote);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Details", "Leiloes", new { Id = Lote.LeilaoId });
             }
             return View(Lote);
         }
@@ -75,7 +75,7 @@ namespace ControleDeLeiloes.Controllers
             {
                 return NotFound();
             }
-            ViewData["produtos"] = new SelectList(_context.Produto, "Id", "Descricao");
+            ViewData["produtos"] = new SelectList(_context.Produto, "Id", "Titulo");
             ViewData["leiloes"] = new SelectList(_context.Leilao, "Id", "Descricao");
 
             var Lote = await _context.Lote.FindAsync(id);
@@ -116,7 +116,7 @@ namespace ControleDeLeiloes.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Details", "Leiloes", new { Id = lote.LeilaoId });
             }
             return View(lote);
         }
@@ -149,7 +149,7 @@ namespace ControleDeLeiloes.Controllers
             var lote = await _context.Lote.FindAsync(id);
             _context.Lote.Remove(lote);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Details", "Leiloes", new { Id = lote.LeilaoId });
         }
 
         private bool LoteExists(int? id)
