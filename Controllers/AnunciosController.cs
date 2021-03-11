@@ -52,6 +52,10 @@ namespace ControleDeLeiloes.Controllers
             Progresso = new Progresso();
             return Json(Progresso);
         }
+        public async Task<IActionResult> teste()
+        {
+            return View();
+        }
         // GET: Anuncios
         public async Task<IActionResult> Index(int? pagina, bool verNotView, int? categoriaId, int? subcategoriaId, string uf, string bairro, bool olxPay, bool olxDelivery, int? vlrMin, int? vlrMax, string txtBusca)
         {
@@ -135,6 +139,7 @@ namespace ControleDeLeiloes.Controllers
             }
             return View(await tempAnuncio.ToPagedListAsync(numeroPagina, itensPorPagina));
         }
+        
         //POST: Atualizar NotView em anuncio
         public async Task<bool> UpdateNotView(bool notView, int id)
         {

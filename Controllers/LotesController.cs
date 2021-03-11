@@ -156,5 +156,10 @@ namespace ControleDeLeiloes.Controllers
         {
             return _context.Lote.Any(e => e.Id == id);
         }
+        public bool AlterarLance(int id, int val)
+        {
+            return true;
+        }
+
     }
 }

@@ -46,6 +46,7 @@
                             <th>Cond</th>
                             <th>Lance</th>
                             <th>Pago</th>
+                            <th class="glyphicon glyphicon-ok"></th>
                         </tr>
                     </thead>
                     <tfoot>
@@ -56,9 +57,11 @@
                             <th>Cond</th>
                             <th>Lance</th>
                             <th>Pago</th>
+                            <th class="glyphicon glyphicon-ok"></th>
                         </tr>
                     </tfoot>
                     <tbody>
+                        @{var x = 1; }
                         @foreach (var lote in Model.Lote)
                         {
                             <tr>
@@ -78,13 +81,16 @@
                                 <td>
                                     @Html.DisplayFor(modelItem => lote.VlCondicional)
                                 </td>
-                                <td>
+                                <td id="lance-@x" contenteditable="true" onkeypress="AlterarLance(event, @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlLance)
                                 </td>
-                                <td>
+                                <td id="vlPago-@x" contenteditable="true" onkeypress="AlterarVlPago(event, @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlPago)
                                 </td>
+                                <td id="ok-@x" class="glyphicon glyphicon-ok-sign" style="color:forestgreen">
+                                </td>
                             </tr>
+                            x = x + 1;
                         }
                     </tbody>
                 </table>
@@ -100,3 +106,31 @@
     <!-- col-lg-12 end here -->
 </div>
 <!-- End .row -->
+@section scripts
+{
+    <script type="text/javascript">
+       function AlterarLance(event, idLote, item)
+       {
+           var element = "ok-" + item;
+           document.getElementById(element).style.color ="red";
+            if (event.keyCode == 13)
+            {
+                element = 'lance-' + item
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("AlterarLance", "Lotes")',
+                    data: { id: idLote, val: document.getElementById(element).innerText },
+                    success: function ()
+                    {
+                        element = "ok-" + item;
+                        document.getElementById(element).style.color = "forestgreen";
+                        x = item + 1;
+                        element = "lance-" + x;
+                        document.getElementById(element).focus();
+                    }
+                });
+                event.preventDefault();
+            }
+        }
+    </script>
+}
