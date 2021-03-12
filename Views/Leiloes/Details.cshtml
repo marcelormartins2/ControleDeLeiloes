@@ -1,5 +1,6 @@
 ﻿@model ControleDeLeiloes.Models.Leilao
-@{ ViewData["Title"] = "Detalhes"; }
+@{ ViewData["Title"] = "Detalhes";
+}
 <!-- Start .row -->
 <div class="row">
     <div class="col-lg-12">
@@ -81,7 +82,10 @@
                                 <td>
                                     @Html.DisplayFor(modelItem => lote.VlCondicional)
                                 </td>
-                                <td id="lance-@x" contenteditable="true" onkeypress="AlterarLance(event, @lote.Id, @x)">
+                                <td id="lance-@x" contenteditable="true" 
+                                    onfocusout="VerificaLances()" 
+                                    onkeyup="AnalisaKey(event,@x)" 
+                                    onkeypress="AlterarLance(event, @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlLance)
                                 </td>
                                 <td id="vlPago-@x" contenteditable="true" onkeypress="AlterarVlPago(event, @lote.Id, @x)">
@@ -97,8 +101,8 @@
             </div>
             <div class="panel-heading">
                 <p>
-                <a asp-controller="Lotes" asp-action="Create">Adicionar</a>
-                    </p>
+                    <a asp-controller="Lotes" asp-action="Create">Adicionar</a>
+                </p>
             </div>
         </div>
         <!-- End .panel -->
@@ -109,24 +113,70 @@
 @section scripts
 {
     <script type="text/javascript">
-       function AlterarLance(event, idLote, item)
-       {
-           var element = "ok-" + item;
-           document.getElementById(element).style.color ="red";
-            if (event.keyCode == 13)
-            {
-                element = 'lance-' + item
+
+        const numItens = @Model.Lote.Count();
+        var lances = [];
+        @foreach (var d in Model.Lote)
+         {
+            @:lances.push("@d.VlLance");
+         }
+
+        function AnalisaKey(event, item)
+        {
+            var elementId = "";
+            switch (event.keyCode) {
+                case 38: //seta para cima
+                    if (item > 1)
+                    {
+                        elementId = "lance-" + (item - 1);
+                        document.getElementById(elementId).focus();
+                    }
+                    break;
+                case 40: //seta para baixo
+                    if (item < @Model.Lote.Count()) {
+                        elementId = "lance-" + (item + 1);
+                        document.getElementById(elementId).focus();
+                    }
+                    break;
+                case 90: //ctrl z
+                    VerificaLances();
+                    break;
+            }
+        }
+        function VerificaLances() {
+            //tecla control
+                var i;
+                var elementId = "lance-";
+                var elementOk = "ok-";
+                for (i = 0; i < numItens; i++) {
+                    elementId = 'lance-' + (i + 1);
+                    elementOk = 'ok-' + (i + 1);
+                    var x = document.getElementById(elementId).innerText;
+                    if (lances[i] != x) {
+                        document.getElementById(elementOk).style.color = "red";
+                    } else
+                    {
+                        document.getElementById(elementOk).style.color = "forestgreen";
+                    }
+                }
+        }
+        function AlterarLance(event, idLote, item) {
+
+            var elementId = "ok-" + item;
+            document.getElementById(elementId).style.color = "red";
+            if (event.keyCode == 13) {
+                elementId = 'lance-' + item;
                 $.ajax({
                     type: 'POST',
                     url: '@Url.Action("AlterarLance", "Lotes")',
-                    data: { id: idLote, val: document.getElementById(element).innerText },
-                    success: function ()
-                    {
-                        element = "ok-" + item;
-                        document.getElementById(element).style.color = "forestgreen";
-                        x = item + 1;
-                        element = "lance-" + x;
-                        document.getElementById(element).focus();
+                    data: { id: idLote, val: document.getElementById(elementId).innerText },
+                    success: function () {
+                        elementId = 'lance-' + item;
+                        lances[item-1] = document.getElementById(elementId).innerText;
+                        elementId = "ok-" + item;
+                        document.getElementById(elementId).style.color = "forestgreen";
+                        elementId = "lance-" + (item + 1);
+                        document.getElementById(elementId).focus();
                     }
                 });
                 event.preventDefault();
