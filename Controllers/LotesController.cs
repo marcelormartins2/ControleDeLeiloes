@@ -3,6 +3,7 @@ using ControleDeLeiloes.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -156,10 +157,31 @@ namespace ControleDeLeiloes.Controllers
         {
             return _context.Lote.Any(e => e.Id == id);
         }
-        public bool AlterarLance(int id, int val)
+        public async Task<JsonResult> AlterarLanceVlPago(int id, string lance, string vlPg)
         {
-            return true;
+            try
+            {
+                lance = lance.Replace(",", ".");
+                vlPg = vlPg.Replace(",", ".");
+                double? lanceConvert = string.IsNullOrEmpty(lance) ? (double?)null : double.Parse(lance, CultureInfo.InvariantCulture);
+                double? vlPgConvert = string.IsNullOrEmpty(vlPg) ? (double?)null : double.Parse(vlPg, CultureInfo.InvariantCulture); 
+                var lote = await _context.Lote.FindAsync(id);
+                if (lote != null)
+                {
+                    lote.VlLance = lanceConvert;
+                    lote.VlPago = vlPgConvert;
+                    _context.Update(lote);
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true });
+                }else
+                {
+                    return Json(new { success = false });
+                }
+            }
+            catch (System.Exception)
+            {
+                return Json(new { success = false });
+            }
         }
-
     }
 }

@@ -83,12 +83,15 @@
                                     @Html.DisplayFor(modelItem => lote.VlCondicional)
                                 </td>
                                 <td id="lance-@x" contenteditable="true" 
-                                    onfocusout="VerificaLances()" 
-                                    onkeyup="AnalisaKey(event,@x)" 
-                                    onkeypress="AlterarLance(event, @lote.Id, @x)">
+                                    onfocusout="VerificaLancesVlPagos('lance-')" 
+                                    onkeyup="AnalisaKey(event, 'lance-',@x)" 
+                                    onkeypress="AlterarLanceVlPago(event, 'lance-', @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlLance)
                                 </td>
-                                <td id="vlPago-@x" contenteditable="true" onkeypress="AlterarVlPago(event, @lote.Id, @x)">
+                                <td id="vlPago-@x" contenteditable="true"
+                                    onfocusout="VerificaLancesVlPagos('vlPago-')" 
+                                    onkeyup="AnalisaKey(event,'vlPago-',@x)" 
+                                    onkeypress="AlterarLanceVlPago(event, 'vlPago-', @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlPago)
                                 </td>
                                 <td id="ok-@x" class="glyphicon glyphicon-ok-sign" style="color:forestgreen">
@@ -116,67 +119,98 @@
 
         const numItens = @Model.Lote.Count();
         var lances = [];
+        var vlPagos = [];
         @foreach (var d in Model.Lote)
          {
             @:lances.push("@d.VlLance");
+            @:vlPagos.push("@d.VlPago");
          }
 
-        function AnalisaKey(event, item)
+        function AnalisaKey(event, elementId, item)
         {
-            var elementId = "";
             switch (event.keyCode) {
                 case 38: //seta para cima
                     if (item > 1)
                     {
-                        elementId = "lance-" + (item - 1);
-                        document.getElementById(elementId).focus();
+                        //elementId += (item - 1);
+                        document.getElementById(elementId + (item - 1)).focus();
                     }
                     break;
                 case 40: //seta para baixo
                     if (item < @Model.Lote.Count()) {
-                        elementId = "lance-" + (item + 1);
-                        document.getElementById(elementId).focus();
+                        //elementId += (item + 1);
+                        document.getElementById(elementId + (item + 1)).focus();
                     }
                     break;
+                case 46: //delete
+                case 8: //backspace
                 case 90: //ctrl z
-                    VerificaLances();
+                    VerificaLancesVlPagos(elementId);
                     break;
             }
         }
-        function VerificaLances() {
+        function VerificaLancesVlPagos(elementId) {
             //tecla control
                 var i;
-                var elementId = "lance-";
                 var elementOk = "ok-";
                 for (i = 0; i < numItens; i++) {
-                    elementId = 'lance-' + (i + 1);
+                    //elementId = 'lance-' + (i + 1);
                     elementOk = 'ok-' + (i + 1);
-                    var x = document.getElementById(elementId).innerText;
-                    if (lances[i] != x) {
-                        document.getElementById(elementOk).style.color = "red";
-                    } else
-                    {
-                        document.getElementById(elementOk).style.color = "forestgreen";
+                    var x = document.getElementById(elementId + (i + 1)).innerText;
+                    switch (elementId) {
+                        case 'lance-':
+                            if (lances[i] != x) {
+                                document.getElementById(elementOk).style.color = "red";
+                            } else {
+                                document.getElementById(elementOk).style.color = "forestgreen";
+                            }
+                            break;
+                        case 'vlPago-':
+                            if (vlPagos[i] != x) {
+                                document.getElementById(elementOk).style.color = "red";
+                            } else {
+                                document.getElementById(elementOk).style.color = "forestgreen";
+                            }
+                            break;
                     }
+
                 }
         }
-        function AlterarLance(event, idLote, item) {
+        function AlterarLanceVlPago(event, elementId, idLote, item) {
 
-            var elementId = "ok-" + item;
-            document.getElementById(elementId).style.color = "red";
+            var okId = "ok-" + item;
+            var lanceId = "lance-" + item;
+            var vlPagoId = "vlPago-" + item;
+            document.getElementById(okId).style.color = "red";
             if (event.keyCode == 13) {
-                elementId = 'lance-' + item;
+                okId = 'lance-' + item;
+                //if (document.getElementById(lanceId).innerText != "")
+                //{
+                //    var valLance = parseFloat(document.getElementById(lanceId).innerText).toFixed(2);
+                //} else
+                //{
+                //    var valLance = null;
+                //}
+                //if (document.getElementById(vlPagoId).innerText != "")
+                //{
+                //    var valPago = parseFloat(document.getElementById(vlPagoId).innerText).toFixed(2);
+                //} else
+                //{
+                //    var valPago = null;
+                //}
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("AlterarLance", "Lotes")',
-                    data: { id: idLote, val: document.getElementById(elementId).innerText },
+                    url: '@Url.Action("AlterarLanceVlPago", "Lotes")',
+                    data: {
+                        id: idLote,
+                        lance: document.getElementById(lanceId).innerText,
+                        vlPg: document.getElementById(vlPagoId).innerText
+                    },
                     success: function () {
-                        elementId = 'lance-' + item;
-                        lances[item-1] = document.getElementById(elementId).innerText;
-                        elementId = "ok-" + item;
-                        document.getElementById(elementId).style.color = "forestgreen";
-                        elementId = "lance-" + (item + 1);
-                        document.getElementById(elementId).focus();
+                        lances[item - 1] = document.getElementById(lanceId).innerText;
+                        vlPagos[item -1] = document.getElementById(vlPagoId).innerText;
+                        document.getElementById(okId).style.color = "forestgreen";
+                        document.getElementById(elementId + (item + 1)).focus();
                     }
                 });
                 event.preventDefault();
