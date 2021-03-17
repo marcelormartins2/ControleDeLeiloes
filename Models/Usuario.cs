@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace ControleDeLeiloes.Models
@@ -11,5 +12,9 @@ namespace ControleDeLeiloes.Models
         [Display(Name = "Endereço")]
         public string Endereco { get; set; }
 
+        public static implicit operator int(Usuario v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

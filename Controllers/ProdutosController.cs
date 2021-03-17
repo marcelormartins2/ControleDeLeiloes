@@ -51,7 +51,7 @@ namespace ControleDeLeiloes.Controllers
 
             return View();
         }
-        public IActionResult BuscarLotesBsb(string username, string password)
+        public async Task<IActionResult> BuscarLotesBsb(string username, string password)
         {
             if (username == null)
             {
@@ -67,7 +67,6 @@ namespace ControleDeLeiloes.Controllers
                 request.AddParameter("_password", password);
                 request.AddParameter("_username", username);
                 var response = client.Execute(request);
-
                 client = new RestClient("https://www.bsbleiloes.com.br/arrematante/minhas-arrematacoes");
                 client.CookieContainer = cookieJar;
                 client.Timeout = -1;
@@ -76,57 +75,85 @@ namespace ControleDeLeiloes.Controllers
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     var textoGeral = response.Content;
-                    string txtTemp;
-                    Produto produto = new Produto();
                     List<Produto> listProduto = new List<Produto>();
-                    int pos1 = textoGeral.IndexOf("card card-plain");
+                    int pos1;
                     int pos2;
                     int limite;
-                    while (pos1 > 0)
+                    DateTime dataLeilao;
+                    int x = 0;
+                    pos1 = textoGeral.LastIndexOf("card card-plain");
+                    if (pos1 > -1)
                     {
-                        // nome do leilao
+                        //busca ultimo Id de produto no BD e incrementa-o quando for criar novo produto
+                        int lastId = await _context.Produto.OrderByDescending(o => o.Id).Select(o => o.Id).FirstOrDefaultAsync();
+                        var usuario = await _userManager.FindByNameAsync(User.Identity.Name);
+                        //lastId = (ultimoProduto != null) ? ultimoProduto.Id + 1 : 1;
+                        // data do leilao
                         pos1 = textoGeral.IndexOf("aria-controls", pos1);
                         pos1 = textoGeral.IndexOf(">", pos1) + 1;
                         pos2 = textoGeral.IndexOf("<i class=", pos1) - 1;
-                        produto.Descricao = "BSB-" + textoGeral.Substring(pos2 - pos1 - 30, pos2 - pos1 - 40).TrimStart().TrimEnd();
-                        limite = textoGeral.IndexOf("</table>", pos1);
-                        while (pos1 < limite)
+                        dataLeilao = DateTime.Parse(textoGeral.Substring(pos2 - 104, 10).TrimStart().TrimEnd());
+                        //tituloLeilao = "BSB-" + dataLeilao.ToString("dd/MM/yy");
+                        //verifica no banco de dados se o primeiro produto já está cadastrado
+                        if (await _context.Produto.AnyAsync(m => m.DataAnuncio == dataLeilao && m.Vendedor == "BSB"))
                         {
-                            //lote
-                            pos1 = textoGeral.IndexOf("<td>", pos1) + 5;
-                            pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
-                            produto.Descricao += $"-Lote {textoGeral.Substring(pos1, pos2 - pos1).Trim()}";
-                            //bem
-                            pos1 = textoGeral.IndexOf("<td>", pos1 + 1) + 5;
-                            pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
-                            produto.Titulo = textoGeral.Substring(pos1, pos2 - pos1).TrimStart().TrimEnd();
-                            if (produto.Titulo.IndexOf("(NO ESTADO)") > 0)
-                            {
-                                produto.Titulo.Remove(produto.Titulo.IndexOf("(NO ESTADO)"), 11);
-                            }
-                            //valor pago
-                            for (int i = 0; i < 5; i++)
-                            {
-                                pos1 = textoGeral.IndexOf("<td>", pos1 + 1);
-                            }
-                            pos1 += 10;
-                            pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
-                            //produto.VlCompra = Double.Parse(textoGeral.Substring(pos1, pos2 - pos1).TrimEnd());
+                            pos1 = -1; //não processa os dados da página
                         }
-                        //proximo leilão
-                        pos1 = textoGeral.IndexOf("card card-plain", pos1);
+                        while (pos1 > -1)
+                        {
+                            limite = textoGeral.IndexOf("</tbody>", pos1);
+                            pos1 = textoGeral.IndexOf("<td>", pos1) + 5;
+                            while (pos1 < limite && pos1 > 0)
+                            {
+                                listProduto.Add(new Produto() { Id = ++lastId, UsuarioId = usuario.Id, DataAnuncio = dataLeilao, DataCadastro = DateTime.Now.Date, Vendedor = "BSB" });
+                                //lote
+                                pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
+                                listProduto[x].Descricao += $"Lote {textoGeral.Substring(pos1, pos2 - pos1).Trim()}";
+                                //bem
+                                pos1 = textoGeral.IndexOf("<td>", pos1 + 1) + 5;
+                                pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
+                                listProduto[x].Titulo = textoGeral.Substring(pos1, pos2 - pos1).TrimStart().TrimEnd();
+                                if (listProduto[x].Titulo.IndexOf("(NO ESTADO)") > 0)
+                                {
+                                    listProduto[x].Titulo = listProduto[x].Titulo.Remove(listProduto[x].Titulo.IndexOf("(NO ESTADO)"), 11);
+                                }
+                                //valor pago
+                                for (int i = 0; i < 5; i++)
+                                {
+                                    pos1 = textoGeral.IndexOf("<td>", pos1 + 2);
+                                }
+                                pos1 = textoGeral.IndexOf("R$", pos1) + 3;
+                                pos2 = textoGeral.IndexOf("\n", pos1);
+                                double valorTemp = 0;
+                                bool result = double.TryParse(textoGeral.Substring(pos1, pos2 - pos1).TrimStart().TrimEnd(), out valorTemp);
+                                listProduto[x].VlCompra = valorTemp;
+                                ++x;
+                                pos1 = textoGeral.IndexOf("<td>", pos1) + 5;
+                            }
+                            //proximo leilão
+                            textoGeral = textoGeral.Substring(0, textoGeral.LastIndexOf("card card-plain") - 1);
+                            pos1 = textoGeral.LastIndexOf("card card-plain");
+                            // data do leilao
+                            pos1 = textoGeral.IndexOf("aria-controls", pos1);
+                            pos1 = textoGeral.IndexOf(">", pos1) + 1;
+                            pos2 = textoGeral.IndexOf("<i class=", pos1) - 1;
+                            dataLeilao = DateTime.Parse(textoGeral.Substring(pos2 - 104, 10).TrimStart().TrimEnd());
+                        }
+                        if (listProduto.Count > 0)
+                        {
+                            //incluir produtos no BD
+                            _context.Produto.AddRange(listProduto);
+                            await _context.SaveChangesAsync();
+                            return RedirectToAction("Index", "Produtos");
+                        }
                     }
                 }
-                return RedirectToAction("ImportarBsb", "Produtos");
-
             }
-            catch (WebException e)
+            catch (WebException)
             {
-                //Progresso.MensagemErro = "Erro Buscar Arrematações BSB";
-                //Progresso.MensagemErro = e.Message + " //StackTrace// " + e.StackTrace;
+                return RedirectToAction("ImportarBsb", "Produtos");
             }
-
-            return View();
+            return RedirectToAction("ImportarBsb", "Produtos");
         }
         public async Task<IActionResult> Details(int? id)
         {
@@ -146,11 +173,12 @@ namespace ControleDeLeiloes.Controllers
         }
 
 
-        public async Task<IActionResult> Create(int? id)
+        public async Task<IActionResult> Create(int? anuncioId)
         {
-            if (id > 0)
+            if (anuncioId > 0)
             {
-                Anuncio anuncio = await _context.Anuncio.FirstOrDefaultAsync(m => m.Id == id);
+                //busca os dados do anuncio para preencher os campos do produto
+                Anuncio anuncio = await _context.Anuncio.FirstOrDefaultAsync(m => m.Id == anuncioId);
                 Produto produto = new Produto();
 
                 produto.Titulo = anuncio.Titulo;

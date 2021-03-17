@@ -52,10 +52,6 @@ namespace ControleDeLeiloes.Controllers
             Progresso = new Progresso();
             return Json(Progresso);
         }
-        public async Task<IActionResult> teste()
-        {
-            return View();
-        }
         // GET: Anuncios
         public async Task<IActionResult> Index(int? pagina, bool verNotView, int? categoriaId, int? subcategoriaId, string uf, string bairro, bool olxPay, bool olxDelivery, int? vlrMin, int? vlrMax, string txtBusca)
         {
