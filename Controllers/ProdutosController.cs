@@ -3,7 +3,9 @@ using ControleDeLeiloes.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RestSharp;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -47,21 +49,82 @@ namespace ControleDeLeiloes.Controllers
         {
             //Buscar dados do site BSBLeilões
 
-            //try
-            //{
-            //    var resposta = await clienteHttp.GetStringAsync("https://www.bsbleiloes.com.br/arrematante/minhas-arrematacoes");
-            //    conteudoPaginas.Add(resposta);
-            //    if (Progresso.EtapaPagina < qntPaginas)
-            //    {
-            //        Progresso.EtapaPagina++;
-            //    }
-            //}
-            //catch (WebException e)
-            //{
-            //    Progresso.MensagemErro = "Erro ProcessUrlAsync";
-            //    //Progresso.MensagemErro = e.Message + " //StackTrace// " + e.StackTrace;
-            //}
+            return View();
+        }
+        public IActionResult BuscarLotesBsb(string username, string password)
+        {
+            if (username == null)
+            {
+                return RedirectToAction("ImportarBsb", "Produtos");
+            }
+            try
+            {
+                CookieContainer cookieJar = new CookieContainer();
+                var client = new RestClient("https://www.bsbleiloes.com.br/arrematante/login");
+                client.CookieContainer = cookieJar;
+                client.Timeout = -1;
+                var request = new RestRequest(Method.POST);
+                request.AddParameter("_password", password);
+                request.AddParameter("_username", username);
+                var response = client.Execute(request);
 
+                client = new RestClient("https://www.bsbleiloes.com.br/arrematante/minhas-arrematacoes");
+                client.CookieContainer = cookieJar;
+                client.Timeout = -1;
+                request = new RestRequest(Method.GET);
+                response = client.Execute(request);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var textoGeral = response.Content;
+                    string txtTemp;
+                    Produto produto = new Produto();
+                    List<Produto> listProduto = new List<Produto>();
+                    int pos1 = textoGeral.IndexOf("card card-plain");
+                    int pos2;
+                    int limite;
+                    while (pos1 > 0)
+                    {
+                        // nome do leilao
+                        pos1 = textoGeral.IndexOf("aria-controls", pos1);
+                        pos1 = textoGeral.IndexOf(">", pos1) + 1;
+                        pos2 = textoGeral.IndexOf("<i class=", pos1) - 1;
+                        produto.Descricao = "BSB-" + textoGeral.Substring(pos2 - pos1 - 30, pos2 - pos1 - 40).TrimStart().TrimEnd();
+                        limite = textoGeral.IndexOf("</table>", pos1);
+                        while (pos1 < limite)
+                        {
+                            //lote
+                            pos1 = textoGeral.IndexOf("<td>", pos1) + 5;
+                            pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
+                            produto.Descricao += $"-Lote {textoGeral.Substring(pos1, pos2 - pos1).Trim()}";
+                            //bem
+                            pos1 = textoGeral.IndexOf("<td>", pos1 + 1) + 5;
+                            pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
+                            produto.Titulo = textoGeral.Substring(pos1, pos2 - pos1).TrimStart().TrimEnd();
+                            if (produto.Titulo.IndexOf("(NO ESTADO)") > 0)
+                            {
+                                produto.Titulo.Remove(produto.Titulo.IndexOf("(NO ESTADO)"), 11);
+                            }
+                            //valor pago
+                            for (int i = 0; i < 5; i++)
+                            {
+                                pos1 = textoGeral.IndexOf("<td>", pos1 + 1);
+                            }
+                            pos1 += 10;
+                            pos2 = textoGeral.IndexOf("</td>", pos1) - 1;
+                            //produto.VlCompra = Double.Parse(textoGeral.Substring(pos1, pos2 - pos1).TrimEnd());
+                        }
+                        //proximo leilão
+                        pos1 = textoGeral.IndexOf("card card-plain", pos1);
+                    }
+                }
+                return RedirectToAction("ImportarBsb", "Produtos");
+
+            }
+            catch (WebException e)
+            {
+                //Progresso.MensagemErro = "Erro Buscar Arrematações BSB";
+                //Progresso.MensagemErro = e.Message + " //StackTrace// " + e.StackTrace;
+            }
 
             return View();
         }
@@ -85,7 +148,7 @@ namespace ControleDeLeiloes.Controllers
 
         public async Task<IActionResult> Create(int? id)
         {
-            if (id>0)
+            if (id > 0)
             {
                 Anuncio anuncio = await _context.Anuncio.FirstOrDefaultAsync(m => m.Id == id);
                 Produto produto = new Produto();

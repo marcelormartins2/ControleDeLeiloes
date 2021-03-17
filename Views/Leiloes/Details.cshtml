@@ -37,7 +37,11 @@
             <div class="panel-heading blue-light-bg">
                 <h4 class="panel-title">Lotes</h4>
             </div>
+
             <div class="panel-body">
+                    <p>
+                        <a asp-controller="Lotes" asp-action="Create">Adicionar</a>
+                    </p>
                 <table class="table">
                     <thead>
                         <tr>
@@ -82,15 +86,15 @@
                                 <td>
                                     @Html.DisplayFor(modelItem => lote.VlCondicional)
                                 </td>
-                                <td id="lance-@x" contenteditable="true" 
-                                    onfocusout="VerificaLancesVlPagos('lance-')" 
-                                    onkeyup="AnalisaKey(event, 'lance-',@x)" 
+                                <td id="lance-@x" contenteditable="true"
+                                    onfocusout="VerificaLancesVlPagos('lance-')"
+                                    onkeyup="AnalisaKey(event, 'lance-',@x)"
                                     onkeypress="AlterarLanceVlPago(event, 'lance-', @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlLance)
                                 </td>
                                 <td id="vlPago-@x" contenteditable="true"
-                                    onfocusout="VerificaLancesVlPagos('vlPago-')" 
-                                    onkeyup="AnalisaKey(event,'vlPago-',@x)" 
+                                    onfocusout="VerificaLancesVlPagos('vlPago-')"
+                                    onkeyup="AnalisaKey(event,'vlPago-',@x)"
                                     onkeypress="AlterarLanceVlPago(event, 'vlPago-', @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlPago)
                                 </td>
