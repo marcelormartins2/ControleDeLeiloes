@@ -42,35 +42,35 @@
                                     </tr>
                                 </tfoot>
                                 <tbody>
-                                    @foreach (var item in Model)
+                                    @foreach (Lote lote in Model)
                                     {
                                         <tr>
                                             <td>
-                                                <a asp-action="Details" asp-route-id='@item.Id'>
-                                                    @Html.DisplayFor(modelItem => item.Numero)
+                                                <a asp-action="Details" asp-route-id='@lote.Id'>
+                                                    @Html.DisplayFor(modelItem => lote.Numero)
+                                                </a>
+                                            </td>
+                                            @*@foreach (Produto produto in lote.LoteProdutos)
+                                            {
+                                                <td>
+                                                    <a asp-controller="Produtos" asp-action="Details" asp-route-id="@produto.Id">
+                                                        @Html.DisplayFor(modelItem => produto.Titulo)
+                                                    </a>
+                                                </td>
+                                            }*@
+                                            <td>
+                                                <a asp-controller="Leiloes" asp-action="Details" asp-route-id="@lote.LeilaoId">
+                                                    @Html.DisplayFor(modelItem => lote.Leilao.Descricao)
                                                 </a>
                                             </td>
                                             <td>
-                                                <a asp-controller="Produtos" asp-action="Details" asp-route-id="@item.ProdutoId">
-                                                    @Html.DisplayFor(modelItem => item.Produto.Descricao)
-                                                </a>
+                                                @Html.DisplayFor(modelItem => lote.VlAvalicao)
                                             </td>
                                             <td>
-                                                <a asp-controller="Leiloes" asp-action="Details" asp-route-id="@item.LeilaoId">
-                                                    @Html.DisplayFor(modelItem => item.Leilao.Descricao)
-                                                </a>
+                                                @Html.DisplayFor(modelItem => lote.VlCondicional)
                                             </td>
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.VlAvalicao)
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => item.VlCondicional)
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => item.VlLance)
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => item.VlPago)
+                                                @Html.DisplayFor(modelItem => lote.VlLance)
                                             </td>
                                         </tr>
                                     }

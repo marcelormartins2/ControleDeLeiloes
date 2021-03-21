@@ -39,18 +39,16 @@
             </div>
 
             <div class="panel-body">
-                    <p>
-                        <a asp-controller="Lotes" asp-action="Create">Adicionar</a>
-                    </p>
+                <p>
+                    <a asp-controller="Lotes" asp-action="Create">Adicionar</a>
+                </p>
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Lote</th>
-                            <th>Produto</th>
                             <th>Aval</th>
                             <th>Cond</th>
                             <th>Lance</th>
-                            <th>Pago</th>
                             <th class="glyphicon glyphicon-ok"></th>
                         </tr>
                     </thead>
@@ -67,7 +65,7 @@
                     </tfoot>
                     <tbody>
                         @{var x = 1; }
-                        @foreach (var lote in Model.Lote)
+                        @foreach (var lote in Model.Lotes)
                         {
                             <tr>
                                 <td>
@@ -75,11 +73,14 @@
                                         @Html.DisplayFor(modelItem => lote.Numero)
                                     </a>
                                 </td>
-                                <td>
-                                    <a asp-controller="Produtos" asp-action="Details" asp-route-id="@lote.ProdutoId">
-                                        @Html.DisplayFor(modelItem => lote.Produto.Titulo)
-                                    </a>
-                                </td>
+                                @*@foreach (LoteProduto loteProduto in lote.LoteProdutos)
+                                {
+                                    <td>
+                                        <a asp-controller="Produtos" asp-action="Details" asp-route-id="@loteProduto.Id">
+                                            Html.EditorFor(loteProduto);
+                                        </a>
+                                    </td>
+                                }*@
                                 <td>
                                     @Html.DisplayFor(modelItem => lote.VlAvalicao)
                                 </td>
@@ -87,16 +88,10 @@
                                     @Html.DisplayFor(modelItem => lote.VlCondicional)
                                 </td>
                                 <td id="lance-@x" contenteditable="true"
-                                    onfocusout="VerificaLancesVlPagos('lance-')"
+                                    onfocusout="VerificaLances('lance-')"
                                     onkeyup="AnalisaKey(event, 'lance-',@x)"
-                                    onkeypress="AlterarLanceVlPago(event, 'lance-', @lote.Id, @x)">
+                                    onkeypress="AlterarLance(event, 'lance-', @lote.Id, @x)">
                                     @Html.DisplayFor(modelItem => lote.VlLance)
-                                </td>
-                                <td id="vlPago-@x" contenteditable="true"
-                                    onfocusout="VerificaLancesVlPagos('vlPago-')"
-                                    onkeyup="AnalisaKey(event,'vlPago-',@x)"
-                                    onkeypress="AlterarLanceVlPago(event, 'vlPago-', @lote.Id, @x)">
-                                    @Html.DisplayFor(modelItem => lote.VlPago)
                                 </td>
                                 <td id="ok-@x" class="glyphicon glyphicon-ok-sign" style="color:forestgreen">
                                 </td>
@@ -121,13 +116,11 @@
 {
     <script type="text/javascript">
 
-        const numItens = @Model.Lote.Count();
+        const numItens = @Model.Lotes.Count();
         var lances = [];
-        var vlPagos = [];
-        @foreach (var d in Model.Lote)
+        @foreach (var d in Model.Lotes)
          {
             @:lances.push("@d.VlLance");
-            @:vlPagos.push("@d.VlPago");
          }
 
         function AnalisaKey(event, elementId, item)
@@ -141,7 +134,7 @@
                     }
                     break;
                 case 40: //seta para baixo
-                    if (item < @Model.Lote.Count()) {
+                    if (item < @Model.Lotes.Count()) {
                         //elementId += (item + 1);
                         document.getElementById(elementId + (item + 1)).focus();
                     }
@@ -149,11 +142,11 @@
                 case 46: //delete
                 case 8: //backspace
                 case 90: //ctrl z
-                    VerificaLancesVlPagos(elementId);
+                    VerificaLances(elementId);
                     break;
             }
         }
-        function VerificaLancesVlPagos(elementId) {
+        function VerificaLances(elementId) {
             //tecla control
                 var i;
                 var elementOk = "ok-";
@@ -161,30 +154,22 @@
                     //elementId = 'lance-' + (i + 1);
                     elementOk = 'ok-' + (i + 1);
                     var x = document.getElementById(elementId + (i + 1)).innerText;
-                    switch (elementId) {
-                        case 'lance-':
-                            if (lances[i] != x) {
-                                document.getElementById(elementOk).style.color = "red";
-                            } else {
-                                document.getElementById(elementOk).style.color = "forestgreen";
-                            }
-                            break;
-                        case 'vlPago-':
-                            if (vlPagos[i] != x) {
-                                document.getElementById(elementOk).style.color = "red";
-                            } else {
-                                document.getElementById(elementOk).style.color = "forestgreen";
-                            }
-                            break;
+                    if (elementId == 'lance-') {
+                        if (lances[i] != x) {
+                            document.getElementById(elementOk).style.color = "red";
+                        }
+                        else
+                        {
+                            document.getElementById(elementOk).style.color = "forestgreen";
+                        }
                     }
 
                 }
         }
-        function AlterarLanceVlPago(event, elementId, idLote, item) {
+        function AlterarLance(event, elementId, idLote, item) {
 
             var okId = "ok-" + item;
             var lanceId = "lance-" + item;
-            var vlPagoId = "vlPago-" + item;
             document.getElementById(okId).style.color = "red";
             if (event.keyCode == 13) {
                 okId = 'lance-' + item;
@@ -195,24 +180,15 @@
                 //{
                 //    var valLance = null;
                 //}
-                //if (document.getElementById(vlPagoId).innerText != "")
-                //{
-                //    var valPago = parseFloat(document.getElementById(vlPagoId).innerText).toFixed(2);
-                //} else
-                //{
-                //    var valPago = null;
-                //}
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("AlterarLanceVlPago", "Lotes")',
+                    url: '@Url.Action("AlterarLance", "Lotes")',
                     data: {
                         id: idLote,
                         lance: document.getElementById(lanceId).innerText,
-                        vlPg: document.getElementById(vlPagoId).innerText
                     },
                     success: function () {
                         lances[item - 1] = document.getElementById(lanceId).innerText;
-                        vlPagos[item -1] = document.getElementById(vlPagoId).innerText;
                         document.getElementById(okId).style.color = "forestgreen";
                         document.getElementById(elementId + (item + 1)).focus();
                     }

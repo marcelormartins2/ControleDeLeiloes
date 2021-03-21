@@ -81,10 +81,10 @@
             @Html.DisplayFor(model => model.Vendedor)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.IdVendedor)
+            @Html.DisplayNameFor(model => model.OlxIdVendedor)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.IdVendedor)
+            @Html.DisplayFor(model => model.OlxIdVendedor)
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.DtVendedorDesde)
@@ -92,24 +92,14 @@
         <dd>
             @Html.DisplayFor(model => model.DtVendedorDesde)
         </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Img1)
-        </dt>
-        <dd>
-            <img src="@Html.DisplayFor(model => model.Img1)" alt="Image1">
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Img2)
-        </dt>
-        <dd>
-            <img src="@Html.DisplayFor(model => model.Img2)" alt="Image2">
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Img3)
-        </dt>
-        <dd>
-            <img src="@Html.DisplayFor(model => model.Img3)" alt="Image3">
-        </dd>
+        @{int x = 0; }
+        @foreach (Foto foto in Model.Fotos)
+        {
+            <dt>
+                <img src="@Url.Content(foto.Link)" alt="Image" style="height:200px;width:200px;" />
+            </dt>
+            if (++x == 3) break;
+        }
     </dl>
 </div>
 <div>

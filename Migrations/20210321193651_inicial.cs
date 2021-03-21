@@ -4,36 +4,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ControleDeLeiloes.Migrations
 {
-    public partial class Inical : Migration
+    public partial class inicial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Anuncio",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    IdAnuncio = table.Column<int>(nullable: false),
-                    Titulo = table.Column<string>(nullable: true),
-                    Link = table.Column<string>(nullable: true),
-                    DtPublicacao = table.Column<DateTime>(nullable: false),
-                    Img1 = table.Column<string>(nullable: true),
-                    Img2 = table.Column<string>(nullable: true),
-                    Img3 = table.Column<string>(nullable: true),
-                    Descricao = table.Column<string>(nullable: true),
-                    VlAnunciado = table.Column<double>(nullable: true),
-                    Bairro = table.Column<string>(nullable: true),
-                    Telefone = table.Column<string>(nullable: true),
-                    Vendedor = table.Column<string>(nullable: true),
-                    IdVendedor = table.Column<string>(nullable: true),
-                    DtVendedorDesde = table.Column<DateTime>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Anuncio", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -77,6 +51,19 @@ namespace ControleDeLeiloes.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CategoriaAnuncio",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Nome = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoriaAnuncio", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Leiloeiro",
                 columns: table => new
                 {
@@ -99,7 +86,7 @@ namespace ControleDeLeiloes.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    IdVendedor = table.Column<string>(nullable: true),
+                    OlxIdVendedor = table.Column<string>(nullable: true),
                     Nome = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -219,8 +206,10 @@ namespace ControleDeLeiloes.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Titulo = table.Column<string>(nullable: true),
                     Descricao = table.Column<string>(nullable: true),
-                    Data = table.Column<DateTime>(nullable: false),
+                    DataCadastro = table.Column<DateTime>(nullable: false),
+                    DataAnuncio = table.Column<DateTime>(nullable: false),
                     VlAnunciado = table.Column<double>(nullable: true),
                     VlNegociado = table.Column<double>(nullable: true),
                     VlCompra = table.Column<double>(nullable: true),
@@ -245,11 +234,32 @@ namespace ControleDeLeiloes.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SubcategoriaAnuncio",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Nome = table.Column<string>(nullable: true),
+                    CategoriaAnuncioId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SubcategoriaAnuncio", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SubcategoriaAnuncio_CategoriaAnuncio_CategoriaAnuncioId",
+                        column: x => x.CategoriaAnuncioId,
+                        principalTable: "CategoriaAnuncio",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Leilao",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Tipo = table.Column<string>(nullable: true),
                     Descricao = table.Column<string>(nullable: true),
                     Data = table.Column<DateTime>(nullable: false),
                     TaxaAvaliacao = table.Column<double>(nullable: false),
@@ -268,6 +278,40 @@ namespace ControleDeLeiloes.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Anuncio",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    IdAnuncio = table.Column<string>(nullable: true),
+                    Titulo = table.Column<string>(nullable: true),
+                    Link = table.Column<string>(nullable: true),
+                    DtPublicacao = table.Column<DateTime>(nullable: false),
+                    Descricao = table.Column<string>(nullable: true),
+                    VlAnunciado = table.Column<double>(nullable: true),
+                    UF = table.Column<string>(nullable: true),
+                    Bairro = table.Column<string>(nullable: true),
+                    Telefone = table.Column<string>(nullable: true),
+                    DtVendedorDesde = table.Column<DateTime>(nullable: false),
+                    NotView = table.Column<bool>(nullable: false),
+                    OlxPay = table.Column<bool>(nullable: false),
+                    OlxDelivery = table.Column<bool>(nullable: false),
+                    Vendedor = table.Column<string>(nullable: true),
+                    OlxIdVendedor = table.Column<string>(nullable: true),
+                    SubcategoriaAnuncioId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Anuncio", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Anuncio_SubcategoriaAnuncio_SubcategoriaAnuncioId",
+                        column: x => x.SubcategoriaAnuncioId,
+                        principalTable: "SubcategoriaAnuncio",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Lote",
                 columns: table => new
                 {
@@ -276,9 +320,7 @@ namespace ControleDeLeiloes.Migrations
                     Numero = table.Column<string>(nullable: true),
                     VlAvalicao = table.Column<double>(nullable: false),
                     VlCondicional = table.Column<double>(nullable: true),
-                    VlPago = table.Column<double>(nullable: true),
                     VlLance = table.Column<double>(nullable: true),
-                    ProdutoId = table.Column<int>(nullable: false),
                     LeilaoId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -290,13 +332,71 @@ namespace ControleDeLeiloes.Migrations
                         principalTable: "Leilao",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Foto",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Link = table.Column<string>(nullable: true),
+                    AnuncioId = table.Column<int>(nullable: true),
+                    LoteId = table.Column<int>(nullable: true),
+                    ProdutoId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Foto", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Lote_Produto_ProdutoId",
+                        name: "FK_Foto_Anuncio_AnuncioId",
+                        column: x => x.AnuncioId,
+                        principalTable: "Anuncio",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Foto_Lote_LoteId",
+                        column: x => x.LoteId,
+                        principalTable: "Lote",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Foto_Produto_ProdutoId",
                         column: x => x.ProdutoId,
                         principalTable: "Produto",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "LoteProduto",
+                columns: table => new
+                {
+                    LoteId = table.Column<int>(nullable: false),
+                    ProdtoId = table.Column<int>(nullable: false),
+                    ProdutoId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LoteProduto", x => new { x.LoteId, x.ProdtoId });
+                    table.ForeignKey(
+                        name: "FK_LoteProduto_Lote_LoteId",
+                        column: x => x.LoteId,
+                        principalTable: "Lote",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LoteProduto_Produto_ProdutoId",
+                        column: x => x.ProdutoId,
+                        principalTable: "Produto",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Anuncio_SubcategoriaAnuncioId",
+                table: "Anuncio",
+                column: "SubcategoriaAnuncioId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -336,6 +436,21 @@ namespace ControleDeLeiloes.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Foto_AnuncioId",
+                table: "Foto",
+                column: "AnuncioId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Foto_LoteId",
+                table: "Foto",
+                column: "LoteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Foto_ProdutoId",
+                table: "Foto",
+                column: "ProdutoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Leilao_LeiloeiroId",
                 table: "Leilao",
                 column: "LeiloeiroId");
@@ -346,8 +461,8 @@ namespace ControleDeLeiloes.Migrations
                 column: "LeilaoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lote_ProdutoId",
-                table: "Lote",
+                name: "IX_LoteProduto_ProdutoId",
+                table: "LoteProduto",
                 column: "ProdutoId");
 
             migrationBuilder.CreateIndex(
@@ -356,16 +471,18 @@ namespace ControleDeLeiloes.Migrations
                 column: "UsuarioId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VendedorProibido_IdVendedor",
+                name: "IX_SubcategoriaAnuncio_CategoriaAnuncioId",
+                table: "SubcategoriaAnuncio",
+                column: "CategoriaAnuncioId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VendedorProibido_OlxIdVendedor",
                 table: "VendedorProibido",
-                column: "IdVendedor");
+                column: "OlxIdVendedor");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Anuncio");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -382,7 +499,10 @@ namespace ControleDeLeiloes.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Lote");
+                name: "Foto");
+
+            migrationBuilder.DropTable(
+                name: "LoteProduto");
 
             migrationBuilder.DropTable(
                 name: "VendedorProibido");
@@ -391,16 +511,28 @@ namespace ControleDeLeiloes.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Leilao");
+                name: "Anuncio");
+
+            migrationBuilder.DropTable(
+                name: "Lote");
 
             migrationBuilder.DropTable(
                 name: "Produto");
 
             migrationBuilder.DropTable(
-                name: "Leiloeiro");
+                name: "SubcategoriaAnuncio");
+
+            migrationBuilder.DropTable(
+                name: "Leilao");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "CategoriaAnuncio");
+
+            migrationBuilder.DropTable(
+                name: "Leiloeiro");
         }
     }
 }

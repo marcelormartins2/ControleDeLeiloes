@@ -33,21 +33,12 @@
                 <input asp-for="DtPublicacao" class="form-control" />
                 <span asp-validation-for="DtPublicacao" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Img1" class="control-label"></label>
-                <input asp-for="Img1" class="form-control" />
-                <span asp-validation-for="Img1" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Img2" class="control-label"></label>
-                <input asp-for="Img2" class="form-control" />
-                <span asp-validation-for="Img2" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Img3" class="control-label"></label>
-                <input asp-for="Img3" class="form-control" />
-                <span asp-validation-for="Img3" class="text-danger"></span>
-            </div>
+            @foreach (Foto foto in Model.Fotos)
+            {
+                <div class="form-group">
+                    Html.EditorFor(foto);
+                </div>
+            }
             <div class="form-group">
                 <label asp-for="Descricao" class="control-label"></label>
                 <input asp-for="Descricao" class="form-control" />
@@ -74,9 +65,9 @@
                 <span asp-validation-for="Vendedor" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="IdVendedor" class="control-label"></label>
-                <input asp-for="IdVendedor" class="form-control" />
-                <span asp-validation-for="IdVendedor" class="text-danger"></span>
+                <label asp-for="OlxIdVendedor" class="control-label"></label>
+                <input asp-for="OlxIdVendedor" class="form-control" />
+                <span asp-validation-for="OlxIdVendedor" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="DtVendedorDesde" class="control-label"></label>

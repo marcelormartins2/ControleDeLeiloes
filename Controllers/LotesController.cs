@@ -22,7 +22,7 @@ namespace ControleDeLeiloes.Controllers
         {
             var lote = await _context.Lote
                 .Include(a => a.Leilao)
-                .Include(b => b.Produto)
+                .Include(b => b.LoteProdutos)
                 .ToListAsync();
             return View(lote);
         }
@@ -38,7 +38,7 @@ namespace ControleDeLeiloes.Controllers
                 .ToListAsync();
             var Lote = await _context.Lote
                 .Include(a => a.Leilao)
-                .Include(b => b.Produto)
+                .Include(b => b.LoteProdutos)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (Lote == null)
             {
@@ -92,7 +92,7 @@ namespace ControleDeLeiloes.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Numero,VlAvalicao,VlCondicional,VlPago,VlLance,ProdutoId,LeilaoId")] Lote lote)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Numero,VlAvalicao,VlCondicional,VlLance,ProdutoId,LeilaoId")] Lote lote)
         {
             if (lote == null)
             {
@@ -132,7 +132,7 @@ namespace ControleDeLeiloes.Controllers
 
             var Lote = await _context.Lote
                 .Include(l => l.Leilao)
-                .Include(p => p.Produto)
+                .Include(p => p.LoteProdutos)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (Lote == null)
             {
@@ -157,19 +157,16 @@ namespace ControleDeLeiloes.Controllers
         {
             return _context.Lote.Any(e => e.Id == id);
         }
-        public async Task<JsonResult> AlterarLanceVlPago(int id, string lance, string vlPg)
+        public async Task<JsonResult> AlterarLance(int id, string lance)
         {
             try
             {
                 lance = lance.Replace(",", ".");
-                vlPg = vlPg.Replace(",", ".");
                 double? lanceConvert = string.IsNullOrEmpty(lance) ? (double?)null : double.Parse(lance, CultureInfo.InvariantCulture);
-                double? vlPgConvert = string.IsNullOrEmpty(vlPg) ? (double?)null : double.Parse(vlPg, CultureInfo.InvariantCulture); 
                 var lote = await _context.Lote.FindAsync(id);
                 if (lote != null)
                 {
                     lote.VlLance = lanceConvert;
-                    lote.VlPago = vlPgConvert;
                     _context.Update(lote);
                     await _context.SaveChangesAsync();
                     return Json(new { success = true });

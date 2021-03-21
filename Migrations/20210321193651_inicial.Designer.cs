@@ -9,14 +9,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ControleDeLeiloes.Migrations
 {
     [DbContext(typeof(ControleDeLeiloesDbContext))]
-    [Migration("20201230161224_CategoriaAnuncio")]
-    partial class CategoriaAnuncio
+    [Migration("20210321193651_inicial")]
+    partial class inicial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.8")
+                .HasAnnotation("ProductVersion", "3.1.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Anuncio", b =>
@@ -26,9 +26,6 @@ namespace ControleDeLeiloes.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Bairro")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Categoria")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Descricao")
@@ -43,18 +40,6 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<string>("IdAnuncio")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<string>("IdVendedor")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Img1")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Img2")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
-                    b.Property<string>("Img3")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
-
                     b.Property<string>("Link")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
@@ -64,16 +49,22 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<bool>("OlxDelivery")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("OlxIdVendedor")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.Property<bool>("OlxPay")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Subcategoria")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                    b.Property<int>("SubcategoriaAnuncioId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Telefone")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Titulo")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("UF")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Vendedor")
@@ -84,6 +75,8 @@ namespace ControleDeLeiloes.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SubcategoriaAnuncioId");
+
                     b.ToTable("Anuncio");
                 });
 
@@ -93,12 +86,41 @@ namespace ControleDeLeiloes.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("Nome")
-                        .HasColumnType("int");
+                    b.Property<string>("Nome")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
                     b.ToTable("CategoriaAnuncio");
+                });
+
+            modelBuilder.Entity("ControleDeLeiloes.Models.Foto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AnuncioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<int?>("LoteId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProdutoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnuncioId");
+
+                    b.HasIndex("LoteId");
+
+                    b.HasIndex("ProdutoId");
+
+                    b.ToTable("Foto");
                 });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Leilao", b =>
@@ -121,6 +143,9 @@ namespace ControleDeLeiloes.Migrations
 
                     b.Property<double>("TaxaVenda")
                         .HasColumnType("double");
+
+                    b.Property<string>("Tipo")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.HasKey("Id");
 
@@ -167,9 +192,6 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<string>("Numero")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<int>("ProdutoId")
-                        .HasColumnType("int");
-
                     b.Property<double>("VlAvalicao")
                         .HasColumnType("double");
 
@@ -179,16 +201,29 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<double?>("VlLance")
                         .HasColumnType("double");
 
-                    b.Property<double?>("VlPago")
-                        .HasColumnType("double");
-
                     b.HasKey("Id");
 
                     b.HasIndex("LeilaoId");
 
+                    b.ToTable("Lote");
+                });
+
+            modelBuilder.Entity("ControleDeLeiloes.Models.LoteProduto", b =>
+                {
+                    b.Property<int>("LoteId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProdtoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProdutoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LoteId", "ProdtoId");
+
                     b.HasIndex("ProdutoId");
 
-                    b.ToTable("Lote");
+                    b.ToTable("LoteProduto");
                 });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Produto", b =>
@@ -203,7 +238,10 @@ namespace ControleDeLeiloes.Migrations
                     b.Property<string>("Bairro")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.Property<DateTime>("Data")
+                    b.Property<DateTime>("DataAnuncio")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Descricao")
@@ -216,6 +254,9 @@ namespace ControleDeLeiloes.Migrations
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("Telefone")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
+                    b.Property<string>("Titulo")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("UsuarioId")
@@ -250,10 +291,15 @@ namespace ControleDeLeiloes.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("Nome")
+                    b.Property<int>("CategoriaAnuncioId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Nome")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoriaAnuncioId");
 
                     b.ToTable("SubcategoriaAnuncio");
                 });
@@ -337,15 +383,15 @@ namespace ControleDeLeiloes.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("IdVendedor")
-                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
-
                     b.Property<string>("Nome")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
+                    b.Property<string>("OlxIdVendedor")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("IdVendedor");
+                    b.HasIndex("OlxIdVendedor");
 
                     b.ToTable("VendedorProibido");
                 });
@@ -482,6 +528,30 @@ namespace ControleDeLeiloes.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("ControleDeLeiloes.Models.Anuncio", b =>
+                {
+                    b.HasOne("ControleDeLeiloes.Models.SubcategoriaAnuncio", "SubcategoriaAnuncio")
+                        .WithMany()
+                        .HasForeignKey("SubcategoriaAnuncioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ControleDeLeiloes.Models.Foto", b =>
+                {
+                    b.HasOne("ControleDeLeiloes.Models.Anuncio", null)
+                        .WithMany("Fotos")
+                        .HasForeignKey("AnuncioId");
+
+                    b.HasOne("ControleDeLeiloes.Models.Lote", null)
+                        .WithMany("Fotos")
+                        .HasForeignKey("LoteId");
+
+                    b.HasOne("ControleDeLeiloes.Models.Produto", null)
+                        .WithMany("Fotos")
+                        .HasForeignKey("ProdutoId");
+                });
+
             modelBuilder.Entity("ControleDeLeiloes.Models.Leilao", b =>
                 {
                     b.HasOne("ControleDeLeiloes.Models.Leiloeiro", "Leiloeiro")
@@ -494,16 +564,23 @@ namespace ControleDeLeiloes.Migrations
             modelBuilder.Entity("ControleDeLeiloes.Models.Lote", b =>
                 {
                     b.HasOne("ControleDeLeiloes.Models.Leilao", "Leilao")
-                        .WithMany("Lote")
+                        .WithMany("Lotes")
                         .HasForeignKey("LeilaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ControleDeLeiloes.Models.LoteProduto", b =>
+                {
+                    b.HasOne("ControleDeLeiloes.Models.Lote", "Lote")
+                        .WithMany("LoteProdutos")
+                        .HasForeignKey("LoteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ControleDeLeiloes.Models.Produto", "Produto")
-                        .WithMany("Lote")
-                        .HasForeignKey("ProdutoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("LoteProdutos")
+                        .HasForeignKey("ProdutoId");
                 });
 
             modelBuilder.Entity("ControleDeLeiloes.Models.Produto", b =>
@@ -511,6 +588,15 @@ namespace ControleDeLeiloes.Migrations
                     b.HasOne("ControleDeLeiloes.Models.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ControleDeLeiloes.Models.SubcategoriaAnuncio", b =>
+                {
+                    b.HasOne("ControleDeLeiloes.Models.CategoriaAnuncio", "CategoriaAnuncio")
+                        .WithMany()
+                        .HasForeignKey("CategoriaAnuncioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

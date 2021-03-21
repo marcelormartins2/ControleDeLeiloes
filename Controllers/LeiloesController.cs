@@ -38,17 +38,15 @@ namespace ControleDeLeiloes.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) { return NotFound(); }
-
             var leilao = await _context.Leilao
                 .Include(m => m.Leiloeiro)
-                .Include(m => m.Lote)
-                .ThenInclude(m => m.Produto)
+                .Include(m => m.Lotes)
+                .ThenInclude(m => m.LoteProdutos)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (leilao == null)
             {
                 return NotFound();
             }
-
             return View(leilao);
         }
         // GET: Leiloes/Edit

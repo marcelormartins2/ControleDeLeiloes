@@ -12,12 +12,10 @@ namespace ControleDeLeiloes.Models
         public string Numero { get; set; }
         public double VlAvalicao { get; set; }
         public double? VlCondicional { get; set; }
-        public double? VlPago { get; set; }
         public double? VlLance { get; set; }
-
-        public Produto Produto { get; set; }
-        public int ProdutoId { get; set; }
         public Leilao Leilao { get; set; }
         public int LeilaoId { get; set; }
+        public ICollection<Foto> Fotos { get; set; } = new List<Foto>();
+        public IList<LoteProduto> LoteProdutos { get; set; }
     }
 }

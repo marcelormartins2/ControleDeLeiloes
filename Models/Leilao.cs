@@ -7,6 +7,7 @@ namespace ControleDeLeiloes.Models
     public class Leilao
     {
         public int Id { get; set; }
+        public string Tipo { get; set; }
         public string Descricao { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
         public DateTime Data { get; set; }
@@ -15,6 +16,6 @@ namespace ControleDeLeiloes.Models
 
         public Leiloeiro Leiloeiro { get; set; }
         public int LeiloeiroId { get; set; }
-        public ICollection<Lote> Lote { get; set; } = new List<Lote>();
+        public ICollection<Lote> Lotes { get; set; } = new List<Lote>();
     }
 }

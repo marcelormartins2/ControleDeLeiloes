@@ -57,7 +57,7 @@ namespace ControleDeLeiloes.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Numero,VlAvalicao,VlCondicional,VlPago,VlLance,ProdutoId,LeilaoId")] Lote lote)
+        public async Task<IActionResult> Create([Bind("Id,Numero,VlAvalicao,VlCondicional,VlLance,ProdutoId,LeilaoId")] Lote lote)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace ControleDeLeiloes.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Numero,VlAvalicao,VlCondicional,VlPago,VlLance,ProdutoId,LeilaoId")] Lote lote)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Numero,VlAvalicao,VlCondicional,VlLance,ProdutoId,LeilaoId")] Lote lote)
         {
             if (id != lote.Id)
             {

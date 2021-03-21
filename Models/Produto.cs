@@ -25,7 +25,7 @@ namespace ControleDeLeiloes.Models
         [DisplayFormat(DataFormatString = "{0:0.00}")]
         public double? VlNegociado { get; set; }
 
-        [DisplayName(displayName: "Valor Pago")]
+        [DisplayName(displayName: "Valor Compra")]
         [DisplayFormat(DataFormatString = "{0:0.00}")]
         public double? VlCompra { get; set; }
 
@@ -38,12 +38,10 @@ namespace ControleDeLeiloes.Models
         public string Anuncio { get; set; }
         public string Telefone { get; set; }
         public string Vendedor { get; set; }
-
         public Usuario Usuario { get; set; }
         [Required()]
         public string UsuarioId { get; set; }
-
-        public ICollection<Lote> Lote { get; set; } = new List<Lote>();
-
+        public ICollection<Foto> Fotos { get; set; } = new List<Foto>();
+        public IList<LoteProduto> LoteProdutos { get; set; }
     }
 }

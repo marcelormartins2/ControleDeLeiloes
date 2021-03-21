@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ControleDeLeiloes.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -14,12 +14,10 @@ namespace ControleDeLeiloes.Areas.Identity.Pages.Account
     public class RegisterConfirmationModel : PageModel
     {
         private readonly UserManager<Usuario> _userManager;
-        private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<Usuario> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<Usuario> userManager)
         {
             _userManager = userManager;
-            _sender = sender;
         }
 
         public string Email { get; set; }

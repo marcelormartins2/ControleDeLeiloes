@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace ControleDeLeiloes.Models
 {
-    public class UrlAnuncio
+    public class Foto
     {
         public int Id { get; set; }
-        public string Url { get; set; }
+        public string Link { get; set; }
     }
 }

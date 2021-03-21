@@ -54,7 +54,7 @@ namespace ControleDeLeiloes.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,IdVendedor,Nome")] VendedorProibido vendedorProibido)
+        public async Task<IActionResult> Create([Bind("Id,OlxIdVendedor,Nome")] VendedorProibido vendedorProibido)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +86,7 @@ namespace ControleDeLeiloes.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,IdVendedor,Nome")] VendedorProibido vendedorProibido)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,OlxIdVendedor,Nome")] VendedorProibido vendedorProibido)
         {
             if (id != vendedorProibido.Id)
             {

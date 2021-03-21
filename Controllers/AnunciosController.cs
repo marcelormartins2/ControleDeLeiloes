@@ -34,7 +34,6 @@ namespace ControleDeLeiloes.Controllers
         static List<SubcategoriaAnuncio> subcategoriaAnuncios = new List<SubcategoriaAnuncio>();
         static List<CategoriaAnuncio> novasCategoriaAnuncios = new List<CategoriaAnuncio>();
         static List<SubcategoriaAnuncio> novasSubcategoriaAnuncios = new List<SubcategoriaAnuncio>();
-        static List<UrlAnuncio> UrlAnuncios = new List<UrlAnuncio>();
         static int qntPaginas = 5;
         static int lastId = 0;
         static int lastCategoriaAnuncioId = 0;
@@ -684,10 +683,8 @@ namespace ControleDeLeiloes.Controllers
                     {
                         //imagens
                         posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC");
-                        count = 0;
-                        while (posicao1 > -1 && count < 3)
+                        while (posicao1 > -1)
                         {
-                            count++;
                             posicao1 += 27;
                             tamanho = anuncio.IndexOf("alt=", posicao1) - 2 - posicao1;
                             if (tamanho > 0)
@@ -698,18 +695,7 @@ namespace ControleDeLeiloes.Controllers
                                     && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
                                 if (result)
                                 {
-                                    switch (count)
-                                    {
-                                        case 1:
-                                            anuncioUnico.Img1 = uriTmp;
-                                            break;
-                                        case 2:
-                                            anuncioUnico.Img2 = uriTmp;
-                                            break;
-                                        case 3:
-                                            anuncioUnico.Img3 = uriTmp;
-                                            break;
-                                    }
+                                    anuncioUnico.Fotos.Add(new Foto { Link = uriTmp });
                                 }
                             }
                             posicao1 = anuncio.IndexOf("lkx530-4 hXBoAC", posicao1);
@@ -863,7 +849,7 @@ namespace ControleDeLeiloes.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,IdAnuncio,Link,DtPublicacao,Img1,Img2,Img3,Descricao,VlAnunciado,Bairro,Telefone,Vendedor,IdVendedor,DtVendedorDesde")] Anuncio anuncio)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,IdAnuncio,Link,DtPublicacao,Img1,Img2,Img3,Descricao,VlAnunciado,Bairro,Telefone,Vendedor,OlxIdVendedor,DtVendedorDesde")] Anuncio anuncio)
         {
             if (id != anuncio.Id)
             {
